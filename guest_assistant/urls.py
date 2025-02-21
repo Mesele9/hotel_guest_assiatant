@@ -1,9 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
-from common_user.views import login_view, admin_dashboard, logout_view, qr_code_page, database_backup, database_restore
-from employee_management.views import hr_dashboard
+from common_user.views import login_view, admin_dashboard, logout_view, qr_code_page
 from upload.views import upload_dashboard
-from store.views import store_dashboard
 from comments.views import feedback_view, feedback_success_view, feedback_dashboard
 from django.conf import settings
 from django.conf.urls.static import static
