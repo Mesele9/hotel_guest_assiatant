@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Welcome{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+
+        <h1 class="display-4 mb-4 text-primary">Welcome to {{ hotel.name }}</h1>
+        <div class="lead mb-5">{{ hotel.welcome_message|safe }}</div>
+
+        <!-- Features Section -->
+        <div class="row g-4">
+            <!-- Services -->
+            <div class="col-md-4">
+                <a href="{% url 'services' %}" class="text-decoration-none">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-concierge-bell fa-3x mb-3 text-primary"></i>
+                            <h5 class="card-title">Services</h5>
+                            <p class="card-text">
+                                Explore our range of hotel services designed to enhance your stay.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- Policies -->
+            <div class="col-md-4">
+                <a href="{% url 'policies' %}" class="text-decoration-none">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-alt fa-3x mb-3 text-primary"></i>
+                            <h5 class="card-title">Policies</h5>
+                            <p class="card-text">
+                                Review our policies to understand our standards and guest expectations.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- Attractions -->
+            <div class="col-md-4">
+                <a href="{% url 'attractions' %}" class="text-decoration-none">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-map-marker-alt fa-3x mb-3 text-primary"></i>
+                            <h5 class="card-title">Attractions</h5>
+                            <p class="card-text">
+                                Discover local attractions and exciting places to visit during your stay.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- Rooms -->
+            <div class="col-md-4">
+                <a href="{% url 'room_info' %}" class="text-decoration-none">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-bed fa-3x mb-3 text-primary"></i>
+                            <h5 class="card-title">Rooms</h5>
+                            <p class="card-text">
+                                View our comfortable rooms along with amenities tailored for your needs.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- Feedback -->
+            <div class="col-md-4">
+                <a href="{% url 'feedback' %}" class="text-decoration-none">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-comments fa-3x mb-3 text-primary"></i>
+                            <h5 class="card-title">Feedback</h5>
+                            <p class="card-text">
+                                Share your thoughts and help us improve our services for you.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- Digital Menu -->
+            <div class="col-md-4">
+                <a href="{% url 'menu' %}" class="text-decoration-none">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-utensils fa-3x mb-3 text-primary"></i>
+                            <h5 class="card-title">Digital Menu</h5>
+                            <p class="card-text">
+                                Browse our digital menu for dining options and order directly.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+            <!-- File Upload for Printing -->
+            <div class="col-md-4">
+                <a href="{% url 'upload_file' %}" class="text-decoration-none">
+                    <div class="card shadow h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-file-upload fa-3x mb-3 text-primary"></i>
+                            <h5 class="card-title">Print Files</h5>
+                            <p class="card-text">
+                                Upload your documents for a quick and secure printing service.
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+
+    </div>
+</div>
+{% endblock %}

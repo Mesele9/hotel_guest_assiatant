@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+
+{% block title %}Hotel Services{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-10 mx-auto">
+        <h1 class="display-4 mb-5 text-primary">Our Services</h1>
+        
+        <div class="row row-cols-1 row-cols-md-2 g-4">
+            {% for service in services %}
+            <div class="col">
+                <div class="card h-100 shadow">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="bg-primary p-3 rounded me-3">
+                                <i class="fas {{ service.icon }} fa-2x text-white"></i>
+                            </div>
+                            <div>
+                                <h3 class="card-title mb-0">{{ service.name }}</h3>
+                                {% if service.available_24h %}
+                                <span class="badge bg-success mt-2">24/7 Available</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <p class="card-text">{{ service.description }}</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        {% if 24h_services %}
+        <div class="mt-5">
+            <div class="card shadow">
+                <div class="card-body">
+                    <h2 class="mb-4 text-primary">
+                        <i class="fas fa-clock me-2"></i>24/7 Services
+                    </h2>
+                    <div class="row row-cols-2 row-cols-lg-4 g-4">
+                        {% for service in 24h_services %}
+                        <div class="col">
+                            <div class="text-center p-3 border rounded">
+                                <i class="fas {{ service.icon }} fa-2x text-primary mb-2"></i>
+                                <h5 class="mb-0">{{ service.name }}</h5>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

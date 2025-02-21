@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Guest Feedback Form{% endblock %}
+
+{% block content %}
+<div class="container mb-0">
+    <div class="card shadow">
+        <div class="card-header btn-secondary text-center">
+            <h2 class="mb-0">Feedback Form</h2>
+            <p class="card-subtitle mt-2">Please fill all required fields</p>
+        </div>
+        <div class="card-body">
+            <form method="post" class="needs-validation" novalidate>
+                {% csrf_token %}
+                
+                <!-- Personal Information -->
+                <div class="form-section mb-5">
+                    <h2 class="h4 mb-4 border-bottom pb-2">Your Information</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.name.label }}</label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.name.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.contact_no.label }}</label>
+                            {{ form.contact_no }}
+                            {% if form.contact_no.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.contact_no.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.email.label }}</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.email.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">{{ form.date_of_stay.label }}</label>
+                            {{ form.date_of_stay }}
+                            {% if form.date_of_stay.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.date_of_stay.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- First Impression -->
+                <div class="form-section mb-5">
+                    <h2 class="h4 mb-4 border-bottom pb-2">First Impression</h2>
+                    {% include "comments/section_help_text.html" %}
+
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.welcome_rating.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.welcome_rating %}
+                            <div class="form-check form-check-inline {% if form.welcome_rating.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.welcome_rating.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.welcome_rating.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.reception_rating.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.reception_rating %}
+                            <div class="form-check form-check-inline {% if form.reception_rating.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.reception_rating.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.reception_rating.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.hotel_cleanliness.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.hotel_cleanliness %}
+                            <div class="form-check form-check-inline {% if form.hotel_cleanliness.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.hotel_cleanliness.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.hotel_cleanliness.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Room Experience -->
+                <div class="form-section mb-5">
+                    <h2 class="h4 mb-4 border-bottom pb-2">Room Experience</h2>
+                    {% include "comments/section_help_text.html" %}
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.room_cleanliness.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.room_cleanliness %}
+                            <div class="form-check form-check-inline {% if form.room_cleanliness.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.room_cleanliness.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.room_cleanliness.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.amenities_rating.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.amenities_rating %}
+                            <div class="form-check form-check-inline {% if form.amenities_rating.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.amenities_rating.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.amenities_rating.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.room_service.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.room_service %}
+                            <div class="form-check form-check-inline {% if form.room_service.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.room_service.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.room_service.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.housekeeping.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.housekeeping %}
+                            <div class="form-check form-check-inline {% if form.housekeeping.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.housekeeping.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.housekeeping.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Restaurant/Bar Experience -->
+                <div class="form-section mb-5">
+                    <h2 class="h4 mb-4 border-bottom pb-2">Restaurant & Bar Experience</h2>
+                    {% include "comments/section_help_text.html" %}
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.restaurant_ambience.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.restaurant_ambience %}
+                            <div class="form-check form-check-inline {% if form.restaurant_ambience.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.restaurant_ambience.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.restaurant_ambience.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.waiting_team.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.waiting_team %}
+                            <div class="form-check form-check-inline {% if form.waiting_team.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.waiting_team.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.waiting_team.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.complaint_response.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.complaint_response %}
+                            <div class="form-check form-check-inline {% if form.complaint_response.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.complaint_response.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.complaint_response.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.food_presentation.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.food_presentation %}
+                            <div class="form-check form-check-inline {% if form.food_presentation.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.food_presentation.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.food_presentation.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.restaurant_setup.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.restaurant_setup %}
+                            <div class="form-check form-check-inline {% if form.restaurant_setup.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.restaurant_setup.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.restaurant_setup.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.toilet_cleanliness.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.toilet_cleanliness %}
+                            <div class="form-check form-check-inline {% if form.toilet_cleanliness.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.toilet_cleanliness.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.toilet_cleanliness.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Ordering Experience -->
+                <div class="form-section mb-5">
+                    <h2 class="h4 mb-4 border-bottom pb-2">Ordering Experience</h2>
+                    {% include "comments/section_help_text.html" %}
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.staff_recommendation.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.staff_recommendation %}
+                            <div class="form-check form-check-inline {% if form.staff_recommendation.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.staff_recommendation.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.staff_recommendation.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.waiting_time.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.waiting_time %}
+                            <div class="form-check form-check-inline {% if form.waiting_time.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.waiting_time.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.waiting_time.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.food_temperature.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.food_temperature %}
+                            <div class="form-check form-check-inline {% if form.food_temperature.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.food_temperature.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.food_temperature.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.value_money.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.value_money %}
+                            <div class="form-check form-check-inline {% if form.value_money.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.value_money.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.value_money.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="rating-item mb-4">
+                        <label class="form-label">{{ form.portion_size.label }}</label>
+                        <div class="rating-group">
+                            {% for choice in form.portion_size %}
+                            <div class="form-check form-check-inline {% if form.portion_size.errors %}is-invalid{% endif %}">
+                                {{ choice.tag }}
+                                <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                    {{ choice.choice_label }}
+                                </label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% if form.portion_size.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.portion_size.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="form-section mb-5">
+                    <h2 class="h4 mb-4 border-bottom pb-2">Additional Information</h2>
+                    <div class="mb-4">
+                        <label class="form-label">{{ form.exceptional_employee.label }}</label>
+                        {{ form.exceptional_employee }}
+                        {% if form.exceptional_employee.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.exceptional_employee.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label">{{ form.additional_comments.label }}</label>
+                        {{ form.additional_comments }}
+                        {% if form.additional_comments.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.additional_comments.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="text-center mt-5">
+                    <button type="submit" class="btn btn-secondary">Submit Feedback</button>
+                </form>    
+        </div>
+    </div>
+</div>
+
+<style>
+.form-check-input.is-invalid {
+    border-color: #dc3545;
+}
+.invalid-feedback {
+    color: #dc3545;
+    font-size: 0.875em;
+}
+.rating-group {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+.form-section {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    background: #f8f9fa;
+    margin-bottom: 2rem;
+    border: 1px solid #dee2e6;
+}
+.form-check-inline {
+    margin-right: 0;
+    padding: 0.5rem 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.5rem;
+    background: white;
+    transition: all 0.2s;
+}
+.form-check-input:checked + .form-check-label {
+    font-weight: 600;
+    color: #0d6efd;
+}
+</style>
+{% endblock %}

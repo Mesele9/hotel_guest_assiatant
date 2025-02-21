@@ -1,0 +1,97 @@
+<!-- templates/menu/dashboard/base_dashboard.html -->
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar">
+            <div class="position-sticky pt-3">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="{% url 'menu_dashboard' %}">
+                            <i class="fas fa-tachometer-alt me-2"></i>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'menu_item_list' %}">
+                            <i class="fas fa-utensils me-2"></i>
+                            Menu Items
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'main_category_list' %}">
+                            <i class="fas fa-layer-group me-2"></i>
+                            Main Categories
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'category_list' %}">
+                            <i class="fas fa-folder me-2"></i>
+                            Sub Categories
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'tag_list' %}">
+                            <i class="fas fa-tags me-2"></i>
+                            Tags
+                        </a>
+                    </li>
+                            <!-- Include login/logout links in your navigation -->
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        {% endif %}
+                        </li>
+                
+                </ul>
+            </div>
+        </nav>
+
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h1 class="h2">{% block dashboard_title %}{% endblock %}</h1>
+                <div class="btn-toolbar mb-2 mb-md-0">
+                    {% block header_buttons %}{% endblock %}
+                </div>
+            </div>
+            
+            <!-- Messages -->
+            {% if messages %}
+            <div class="mb-4">
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            {% block dashboard_content %}
+            {% endblock %}
+        </main>
+    </div>
+</div>
+{% endblock %}
+
+{% block styles %}
+<style>
+    .sidebar {
+        height: 100vh;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .nav-link {
+        padding: 0.75rem 1rem;
+        color: #333;
+    }
+    .nav-link.active {
+        background-color: #f8f9fa;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}

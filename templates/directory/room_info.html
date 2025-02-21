@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Room Information{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="display-4 mb-5 text-primary">Our Room Types</h1>
+    
+    <div class="row row-cols-1 row-cols-lg-2 g-4">
+        {% for room in room_types %}
+        <div class="col">
+            <div class="card h-100 shadow">
+                <img src="{{ room.image.url }}" class="card-img-top" alt="{{ room.name }}">
+                <div class="card-body">
+                    <h2 class="card-title">{{ room.name }}</h2>
+                    <p class="lead">{{ room.description }}</p>
+                    
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="border p-3 rounded">
+                                <h5>Details</h5>
+                                <ul class="list-unstyled">
+                                    <li><strong>Size:</strong> {{ room.size_sqm }} m²</li>
+                                    <li><strong>Max Guests:</strong> {{ room.max_occupancy }}</li>
+                                    <li><strong>Price/Night:</strong> ETB {{ room.base_price }}</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="border p-3 rounded">
+                                <h5>Amenities</h5>
+                                <div class="amenities-grid">
+                                    {% for amenity in room.get_amenities_list %}
+                                    <div class="amenity-item">
+                                        {% if amenity.icon %}
+                                        <i class="fas {{ amenity.icon }} me-2"></i>
+                                        {% endif %}
+                                        {{ amenity.name }}
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

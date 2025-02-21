@@ -1,0 +1,40 @@
+<!-- templates/menu/dashboard/tag_form.html -->
+{% extends 'menu/dashboard/base_dashboard.html' %}
+{% block dashboard_title %}{% if tag %}Edit {{ tag.name }}{% else %}Create New Tag{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.name.label_tag }}
+                        {{ form.name }}
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        {{ form.icon.label_tag }}
+                        {{ form.icon }}
+                        <small class="form-text text-muted">Font Awesome icon class (e.g. 'fas fa-leaf')</small>
+                    </div>
+                </div>
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        {{ form.color.label_tag }}
+                        {{ form.color }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a href="{% url 'tag_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

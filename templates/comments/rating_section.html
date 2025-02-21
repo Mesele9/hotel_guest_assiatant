@@ -1,0 +1,13 @@
+<div class="rating-item mb-4">
+    <label class="form-label fw-bold">{{ field.label }}</label>
+    <div class="rating-group">
+        {% for choice in field %}
+        <div class="form-check form-check-inline">
+            {{ choice.tag }}
+            <label class="form-check-label" for="{{ choice.id_for_label }}">
+                {{ choice.choice_label }}
+            </label>
+        </div>
+        {% endfor %}
+    </div>
+</div>

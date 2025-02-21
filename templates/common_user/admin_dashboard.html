@@ -1,0 +1,28 @@
+<!-- templates/common_user/admin_dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Admin Dashboard{% endblock %}
+
+{% block content %}
+<div class="row">
+    
+    <div class="col-md-6">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Feedback View</h5>
+                <p class="card-text">View feedbacks submitted by users.</p>
+                <a href="{% url 'feedback_dashboard' %}" class="btn btn-primary">Go to Feedback Dashboard</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="card-title">Menu Management</h5>
+                <p class="card-text">Manage Menu, Category, Tag and Price.</p>
+                <a href="{% url 'menu_dashboard' %}" class="btn btn-primary">Go to Menu Dashboard</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

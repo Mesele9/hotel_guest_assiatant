@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <!-- Back Button -->
+    <div class="mb-4">
+        {% if category_id %}
+        <a href="{% url 'menu' %}?main_category={{ item.categories.first.main_category.id }}&subcategory={{ category_id }}" class="btn btn-secondary">
+            ← Back to Category
+        </a>
+        {% else %}
+        <a href="{% url 'menu' %}" class="btn btn-secondary">← Back to Menu</a>
+        {% endif %}
+    </div>    
+
+    <!-- Item Details -->
+    <div class="row g-4">
+        <!-- Image Column -->
+        <div class="col-md-6">
+            <div class="card">
+                {% if item.image %}
+                <img src="{{ item.image.url }}" class="card-img-detail-top img-fluid rounded" alt="{{ item.name }}">
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Info Column -->
+        <div class="col-md-6">
+            <div class="card h-100">
+                <div class="card-body">
+                    <h1 class="card-title">{{ item.name }}</h1>
+                    <p class="lead">Br{{ item.price }}</p>
+                    
+                    {% if item.tags.exists %}
+                    <div class="mb-3">
+                        <h5>Tags:</h5>
+                        {% for tag in item.tags.all %}
+                        <span class="badge rounded-pill mb-1" 
+                            style="background-color: {{ tag.color }}; color: white; font-size: 0.9em;">
+                            {% if tag.icon %}
+                            <i class="{{ tag.icon }} me-1"></i>
+                            {% endif %}
+                            {{ tag.name }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <p class="card-text">{{ item.description }}</p>
+                    <div class="mt-4">
+                        <h5>Categories:</h5>
+                        {% for category in item.categories.all %}
+                        <span class="badge bg-primary">{{ category.name }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ratings & Reviews -->
+    <div class="row mt-5">
+        <div class="col-md-12">
+            <h3 class="mb-4">Ratings & Reviews</h3>
+
+            <!-- Existing Reviews -->
+            {% for rating in ratings %}
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h5 class="card-title">{{ rating.guest_name }}</h5>
+                        <div class="text-warning">
+                            {% for _ in "12345" %}
+                            {% if forloop.counter <= rating.stars %}★{% else %}☆{% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <p class="card-text">{{ rating.comment }}</p>
+                    <small class="text-muted">{{ rating.created_at|date:"F j, Y" }}</small>
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-muted">No reviews yet. Be the first to review!</p>
+            {% endfor %}
+        </div>
+        
+            <!-- Rating Form -->
+            <div class="card mb-5">
+                <div class="card-body">
+                    <h5 class="card-title">Rate This Item</h5>
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Star Rating -->
+                        <div class="mb-4">
+                            <label class="form-label">Select your rating:</label>
+                            <div class="star-rating-container">
+                                {% for choice in form.stars %}
+                                <div class="form-check form-check-inline">
+                                    {{ choice.tag }}
+                                    <label for="{{ choice.id_for_label }}" class="form-check-label star-label">
+                                        <span class="stars">
+                                            {% for _ in "12345" %}
+                                            {% if forloop.counter <= choice.data.value|add:0 %}★{% else %}☆{% endif %}
+                                            {% endfor %}
+                                        </span>
+                                        <span class="ms-1">({{ choice.data.value }})</span>
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+            
+                        <!-- Name Input -->
+                        <div class="mb-3">
+                            {{ form.guest_name }}
+                        </div>
+            
+                        <!-- Comment Input -->
+                        <div class="mb-3">
+                            {{ form.comment }}
+                        </div>
+            
+                        <button type="submit" class="btn btn-primary">Submit Review</button>
+                    </form>
+                </div>
+            </div>
+            
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle browser back button functionality
+        const backButton = document.querySelector('.btn-secondary');
+        if(backButton) {
+            backButton.addEventListener('click', function(e) {
+                if(document.referrer.includes(window.location.hostname)) {
+                    e.preventDefault();
+                    window.history.back();
+                }
+            });
+        }
+    });
+    </script>
+    
+{% endblock %}

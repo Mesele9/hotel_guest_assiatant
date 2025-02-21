@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+        <!-- Welcome Message (only shows when no subcategory/search) -->
+        {% if not selected_subcategory and not search_query %}
+        <div class="row mb-2 text-center">
+            <div class="col-md-12">
+                <h3 class="display-5 mb-1">Welcome to Our World of Flavors</h3>
+                <p class="text-muted">
+                    Explore authentic local specialties and international favorites, paired with carefully 
+                    crafted beverages from around the globe. Please select the button below to view our 
+                    restaurant or bar menu and begin your epicurean adventure with us. 
+                </p>
+            </div>
+        </div>
+        {% endif %}
+    
+    <!-- Main Category Buttons -->
+    <div class="row mb-4">
+        <div class="col-md-12 text-center">
+            <div class="btn-group">
+                {% for main_cat in main_categories %}
+                <a href="?main_category={{ main_cat.id }}" 
+                   class="btn btn-outline-primary btn-sm {% if main_cat.id == selected_main_category.id %}active{% endif %}">
+                    {{ main_cat.name }}
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <form method="get" action="">
+        <div class="row mb-4">
+            <div class="col-md-12 text-center">
+                {% if selected_main_category %}
+                    <input type="hidden" name="main_category" value="{{ selected_main_category.id }}">
+                {% endif %}
+                {% if selected_subcategory %}
+                    <input type="hidden" name="subcategory" value="{{ selected_subcategory }}">
+                {% endif %}
+                <input type="text" 
+                       name="search" 
+                       id="search-input" 
+                       class="form-control search-bar" 
+                       placeholder="Search items..." 
+                       value="{{ search_query }}">
+            </div>
+        </div>
+    </form>
+
+    <!-- Subcategories (Only shown when no search and no subcategory) -->
+    {% if not selected_subcategory and not search_query %}
+    <div class="row mb-4 justify-content-center">
+        {% for subcategory in subcategories %}
+        <div class="col-lg-2 col-md-4 col-sm-6 mb-4">
+            <a href="?main_category={{ selected_main_category.id }}&subcategory={{ subcategory.id }}" 
+               class="text-decoration-none">
+                <div class="card category-card">
+                    <div class="card-body">
+                        <h5 class="card-title text-center">{{ subcategory.name }}</h5>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Menu Items (Shown when search or subcategory selected) -->
+    {% if selected_subcategory or search_query %}
+    <div class="row justify-content-center" id="menu-items-container">
+        {% if selected_subcategory %}
+        <div class="col-md-12 text-center mb-4">
+            <a href="?main_category={{ selected_main_category.id }}" class="btn btn-secondary">← Back to Categories</a>
+        </div>
+        {% endif %}
+
+        {% for item in menu_items %}
+        <div class="col-lg-3 col-md-4 col-sm-6 mb-4">
+            <a href="{% url 'menu_item_detail' item.id %}?category={{ selected_subcategory }}" class="text-decoration-none text-dark">
+                <div class="card h-100">
+                    {% if item.image %}
+                    <img src="{{ item.image.url }}" class="card-img-top" alt="{{ item.name }}">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.name }}</h5>
+                        <p class="card-text">{{ item.description|truncatechars:100 }}</p>
+                        <p class="card-text text-primary">Br{{ item.price }}</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        {% empty %}
+        <p class="text-center text-muted">No items found matching your search.</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const searchInput = document.getElementById('search-input');
+        if (searchInput) {
+            const form = searchInput.closest('form');
+            let timeoutId;
+
+            // Auto-submit after typing stops
+            searchInput.addEventListener('input', function() {
+                clearTimeout(timeoutId);
+                timeoutId = setTimeout(() => {
+                    form.submit();
+                }, 500);
+            });
+        }
+    });
+</script>
+{% endblock %}

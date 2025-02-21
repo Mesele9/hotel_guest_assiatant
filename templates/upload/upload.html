@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Upload Files{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="card shadow">
+        <div class="card-header btn-secondary text-center">
+            <h2 class="mb-0">Welcome to Yegezu Lejoch Hotel’s Quick Print Service!</h2>
+        </div>
+        <div class="card-body">
+            <h5>How It Works:</h5>
+            <ul>
+                <li>📤 Click the <strong>Choose Files</strong> button below.</li>
+                <li>📑 Select the document you want to print.</li>
+                <li>🖨️ Submit your file, and our team will handle the rest.</li>
+            </ul>
+            <p class="text-muted"><strong>🔒 Your files are handled securely and deleted after printing.</strong></p>
+            <hr>
+            {% if success_message %}
+            <div class="alert alert-success">
+                {{ success_message }}
+            </div>
+            {% endif %}
+
+            {% if errors %}
+            <div class="alert alert-danger">
+                <strong>Error(s):</strong>
+                <ul>
+                    {% for error in errors %}
+                    <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label for="files" class="form-label">Select files to upload:</label>
+                    <input type="file" name="files" class="form-control" multiple>
+                </div>
+                <button type="submit" class="btn btn-secondary">Submit</button>
+            </form>
+            <hr>
+            <h5>🔗 Additional Links:</h5>
+            <ul>
+                <li><a href="{% url 'services' %}">🏨 Hotel Services</a></li>
+                <li><a href="{% url 'menu' %}">🍽️ Restaurant Menu</a></li>
+                <li><a href="[#]">📍 Local Attractions</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

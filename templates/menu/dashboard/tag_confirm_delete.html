@@ -1,0 +1,19 @@
+<!-- templates/menu/dashboard/tag_confirm_delete.html -->
+{% extends 'menu/dashboard/base_dashboard.html' %}
+{% block dashboard_title %}Delete Tag{% endblock %}
+
+{% block dashboard_content %}
+<div class="card border-danger">
+    <div class="card-body">
+        <h5 class="card-title">Confirm Deletion</h5>
+        <p>Are you sure you want to delete "{{ tag.name }}"? This will remove it from all menu items!</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-danger">Yes, Delete</button>
+                <a href="{% url 'tag_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

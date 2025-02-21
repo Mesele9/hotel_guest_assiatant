@@ -1,0 +1,31 @@
+<!-- templates/menu/dashboard/category_form.html -->
+{% extends 'menu/dashboard/base_dashboard.html' %}
+{% block dashboard_title %}{% if category %}Edit {{ category.name }}{% else %}Create New Sub Category{% endif %}{% endblock %}
+
+{% block dashboard_content %}
+<form method="post">
+    {% csrf_token %}
+    <div class="card">
+        <div class="card-body">
+            <div class="mb-3">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+            </div>
+            <div class="mb-3">
+                {{ form.main_category.label_tag }}
+                {{ form.main_category }}
+            </div>
+            <div class="mb-3">
+                {{ form.description.label_tag }}
+                {{ form.description }}
+            </div>
+        </div>
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+                <a href="{% url 'category_list' %}" class="btn btn-secondary">Cancel</a>
+            </div>
+        </div>
+    </div>
+</form>
+{% endblock %}

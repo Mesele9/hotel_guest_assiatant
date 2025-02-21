@@ -1,0 +1,79 @@
+<!-- templates/menu/dashboard/home.html -->
+{% extends 'menu/dashboard/base_dashboard.html' %}
+{% block dashboard_title %}Dashboard Overview{% endblock %}
+
+{% block dashboard_content %}
+<div class="row">
+    <!-- Stats Cards -->
+    <div class="col-md-3 mb-4">
+        <div class="card border-primary">
+            <div class="card-body">
+                <h5 class="card-title">Menu Items</h5>
+                <h2 class="card-text">{{ menu_items_count }}</h2>
+                <a href="{% url 'menu_item_list' %}" class="btn btn-primary btn-sm">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card border-success">
+            <div class="card-body">
+                <h5 class="card-title">Categories</h5>
+                <h2 class="card-text">{{ categories_count }}</h2>
+                <a href="{% url 'category_list' %}" class="btn btn-success btn-sm">Manage</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-4">
+        <div class="card border-info">
+            <div class="card-body">
+                <h5 class="card-title">Tags</h5>
+                <h2 class="card-text">{{ tags_count }}</h2>
+                <a href="{% url 'tag_list' %}" class="btn btn-info btn-sm">Manage</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Ratings -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Recent Ratings</h5>
+    </div>
+    <div class="card-body">
+        {% if recent_ratings %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th>Rating</th>
+                        <th>User</th>
+                        <th>Comment</th>
+                        <th>Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rating in recent_ratings %}
+                    <tr>
+                        <td>{{ rating.menu_item.name }}</td>
+                        <td>
+                            <span class="text-warning">
+                                {% for _ in "12345" %}
+                                {% if forloop.counter <= rating.stars %}★{% else %}☆{% endif %}
+                                {% endfor %}
+                            </span>
+                        </td>
+                        <td>{{ rating.guest_name }}</td>
+                        <td>{{ rating.comment|truncatechars:50 }}</td>
+                        <td>{{ rating.created_at|date:"M d, Y" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No recent ratings found.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+<!-- templates/menu/dashboard/maincategory_list.html -->
+{% extends 'menu/dashboard/base_dashboard.html' %}
+{% block dashboard_title %}Manage Main Categories{% endblock %}
+
+{% block header_buttons %}
+<a href="{% url 'main_category_create' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="fas fa-plus me-1"></i> New Main Category
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for main_category in main_categories %}
+            <tr>
+                <td>{{ main_category.name }}</td>
+                <td>{{ main_category.description|truncatechars:50 }}</td>
+                <td>
+                    <a href="{% url 'main_category_update' main_category.pk %}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{% url 'main_category_delete' main_category.pk %}" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="text-center text-muted">No main categories found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

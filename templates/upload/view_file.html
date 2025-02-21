@@ -1,0 +1,51 @@
+{% extends 'base.html' %}
+
+{% block title %}View File - {{ file.file.name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card shadow">
+        <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+            <h2 class="mb-0">File Details</h2>
+            <a href="{% url 'upload_dashboard' %}" class="btn btn-light btn-sm">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+        
+        <div class="card-body">
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <h5>File Name:</h5>
+                    <p class="fs-5">{{ file.file.name }}</p>
+                </div>
+                <div class="col-md-6">
+                    <h5>Uploaded At:</h5>
+                    <p class="fs-5">{{ file.uploaded_at|date:"Y-m-d H:i" }}</p>
+                </div>
+            </div>
+
+            <div class="border-top pt-3">
+                <h4>Preview:</h4>
+                {% if file.file.name|lower|slice:"-4:" == ".pdf" %}
+                    <embed src="{{ file.file.url }}" type="application/pdf" 
+                           width="100%" height="600px" class="border rounded">
+                {% elif file.file.name|lower|slice:"-4:" == ".png" or file.file.name|lower|slice:"-4:" == ".jpg" %}
+                    <img src="{{ file.file.url }}" alt="File preview" 
+                         class="img-fluid border rounded" style="max-height: 600px;">
+                {% else %}
+                    <div class="alert alert-info">
+                        This file type cannot be previewed. Please download to view.
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="mt-4">
+                <a href="{% url 'download_file' file.id %}" 
+                   class="btn btn-primary">
+                    <i class="bi bi-download"></i> Download File
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

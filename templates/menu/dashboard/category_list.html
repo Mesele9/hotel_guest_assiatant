@@ -1,0 +1,45 @@
+<!-- templates/menu/dashboard/category_list.html -->
+{% extends 'menu/dashboard/base_dashboard.html' %}
+{% block dashboard_title %}Manage Sub Categories{% endblock %}
+
+{% block header_buttons %}
+<a href="{% url 'category_create' %}" class="btn btn-sm btn-outline-secondary">
+    <i class="fas fa-plus me-1"></i> New Sub Category
+</a>
+{% endblock %}
+
+{% block dashboard_content %}
+<div class="table-responsive">
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Main Category</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for category in categories %}
+            <tr>
+                <td>{{ category.name }}</td>
+                <td>{{ category.main_category.name }}</td>
+                <td>{{ category.description|truncatechars:50 }}</td>
+                <td>
+                    <a href="{% url 'category_update' category.pk %}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                    <a href="{% url 'category_delete' category.pk %}" class="btn btn-sm btn-danger">
+                        <i class="fas fa-trash"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center text-muted">No categories found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

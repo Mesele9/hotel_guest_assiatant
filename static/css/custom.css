@@ -1,0 +1,137 @@
+
+
+.list-group-item {
+    border-left: 3px solid var(--secondary-color);
+}
+
+/* General Styles */
+body {
+    background: linear-gradient(135deg, #f8f9fa, #e0f7fa);
+    font-family: 'Poppins', sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+}
+
+/* Title Bar */
+.title-bar {
+    background-color: #a7c957; /* Sage Green */
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.title-bar img {
+    height: 100px;
+    margin-right: 10px;
+    width: auto;
+}
+
+.title-bar h1 {
+    margin: 0;
+    font-size: 32px;
+    font-weight: bold;
+    color: white;
+}
+
+
+/* Navigation Bar Styles */
+.nav-orange {
+    background-color: #d95d16; /* Dark Orange for the navigation bar */
+}
+
+.navbar-nav .nav-link {
+    font-size: 1.1rem;
+    font-weight: 500;
+    padding: 0.75rem 1rem;
+    color: #fff !important;
+}
+
+.navbar-nav .nav-link:hover,
+.navbar-nav .nav-link:focus {
+    color: #ffe6cc !important;
+    text-decoration: underline;
+}
+
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.card-header {
+    background-color: #f28c28; /* Orange */
+    color: white;
+    border-radius: 12px 12px 0 0;
+}
+
+/* Buttons */
+.btn-secondary {
+    background-color: #f28c28; /* Orange */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.btn-secondary:hover {
+    background-color: #c76d1b; /* Darker Orange */
+}
+
+/* Forms */
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #a7c957; /* Sage Green */
+}
+
+.form-control:focus {
+    border-color: #f28c28; /* Orange */
+    box-shadow: 0 0 0 0.2rem rgba(242, 140, 40, 0.25);
+}
+
+/* Alerts */
+.alert {
+    border-radius: 8px;
+}
+
+.alert-success {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+    color: #155724;
+}
+
+.alert-danger {
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+    color: #721c24;
+}
+
+/* Footer */
+footer {
+    background-color: #f8f9fa;
+    border-top: 2px solid #a7c957; /* Sage Green */
+}
+
+footer a {
+    color: #333;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    color: #f28c28; /* Orange */
+}
