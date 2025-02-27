@@ -7,7 +7,7 @@
     
     <div class="row justify-content-center">
         <!-- Menu QR Code -->
-        <div class="col-md-5 mb-4">
+        <div class="col-md-4 mb-4">
             <div class="card shadow">
                 <div class="card-header bg-secondary text-white">
                     <h3 class="mb-0">Menu QR Code</h3>
@@ -33,7 +33,7 @@
         </div>
 
         <!-- Upload QR Code -->
-        <div class="col-md-5 mb-4">
+        <div class="col-md-4 mb-4">
             <div class="card shadow">
                 <div class="card-header bg-success text-white">
                     <h3 class="mb-0">Upload QR Code</h3>
@@ -59,7 +59,7 @@
         </div>
 
                 <!-- Feedback QR Code -->
-                <div class="col-md-5 mb-4">
+                <div class="col-md-4 mb-4">
                     <div class="card shadow">
                         <div class="card-header bg-info text-white">
                             <h3 class="mb-0">Feedback QR Code</h3>
@@ -85,30 +85,33 @@
                 </div>
 
             <!-- Room Directory QR Code -->
-            <div class="col-md-5 mb-4">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">Room Directory QR Code</h3>
+                        <!-- Room QR Codes Section -->
+        <h2 class="mt-5 mb-4">Room QR Codes</h2>
+        <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+            {% for room, qr_code in room_qr_codes.items %}
+            <div class="col">
+                <div class="card shadow h-100">
+                    <div class="card-header bg-info text-white">
+                        Room {{ room }}
                     </div>
                     <div class="card-body text-center">
-                        <img src="data:image/png;base64,{{ room_directory_qr }}" 
-                             alt="Room Directory QR Code" 
-                             class="img-fluid mb-3"
-                             style="max-width: 250px;">
-                        <div class="mb-3">
-                            <a href="{{ room_directory_url }}" target="_blank" 
-                               class="text-decoration-none">
-                               <i class="fas fa-link"></i> {{ room_directory_url }}
+                        <img src="data:image/png;base64,{{ qr_code }}" 
+                            alt="QR Code for Room {{ room }}" 
+                            class="img-fluid mb-3"
+                            style="max-width: 200px;">
+
+                        <div class="d-grid gap-2">
+                            <a href="data:image/png;base64,{{ qr_code }}" 
+                            download="Room_{{ room }}_QR.png" 
+                            class="btn btn-sm btn-primary">
+                                <i class="fas fa-download me-2"></i>Download
                             </a>
                         </div>
-                        <a href="data:image/png;base64,{{ room_directory_qr }}" 
-                           download="room_directory_qr.png" 
-                           class="btn btn-primary">
-                            <i class="fas fa-download me-2"></i>Download
-                        </a>
                     </div>
                 </div>
             </div>
+            {% endfor %}
+        </div>
 
     </div>
 </div>

@@ -5,10 +5,9 @@ from common_user.decorators import public_view
 
 
 @public_view
-def welcome(request):
+def welcome(request, room_number):
     hotel = Hotel.objects.first()
-    return render(request, 'directory/welcome.html', {'hotel': hotel})
-
+    return render(request, 'directory/welcome.html', {'hotel': hotel, 'room_number': room_number})
 
 @public_view
 def policies(request):

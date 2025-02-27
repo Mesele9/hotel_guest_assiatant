@@ -18,7 +18,8 @@ class RoleBasedAccessMiddleware:
             'policies',
             'services',
             'attractions',
-            'room_info'
+            'room_info',
+            'chat_room',
             # Add other public view names here
         ]
 

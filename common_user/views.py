@@ -78,22 +78,29 @@ def qr_code_page(request):
     menu_url = request.build_absolute_uri('/menu')
     upload_url = request.build_absolute_uri('/upload')
     feedback_url = request.build_absolute_uri('/feedback')
-    room_directory_url = request.build_absolute_uri('/room_directory')
-    
-    # Generate QR codes
-    menu_qr = generate_qr_code(menu_url, color='#2c3e50')
-    upload_qr = generate_qr_code(upload_url, color='#001F3F')
-    feedback_qr = generate_qr_code(feedback_url, color='#001F3F')
-    room_directory_qr = generate_qr_code(room_directory_url, color='#007FFF')
+
+    # Generate room numbers automatically
+    room_qr_codes = {}
+    floors = [1, 2, 3, 4, 5, 6]  # Floors from 1 to 6
+    room_ranges = {1: range(101, 107),  # 101-106
+                   2: range(201, 213),  # 201-212
+                   3: range(301, 313),  # 301-312
+                   4: range(401, 413),  # 401-412
+                   5: range(501, 513),  # 501-512
+                   6: range(601, 613)}  # 601-612
+
+    for floor in floors:
+        for room in room_ranges[floor]:
+            room_url = request.build_absolute_uri(f'/room_directory/welcome/{room}/')
+            room_qr_codes[str(room)] = generate_qr_code(room_url, color='#007FFF')
 
     context = {
         'menu_url': menu_url,
         'upload_url': upload_url,
         'feedback_url': feedback_url,
-        'room_directory_url': room_directory_url,
-        'menu_qr': menu_qr,
-        'upload_qr': upload_qr,
-        'feedback_qr': feedback_qr,
-        'room_directory_qr': room_directory_qr
+        'menu_qr': generate_qr_code(menu_url, color='#2c3e50'),
+        'upload_qr': generate_qr_code(upload_url, color='#001F3F'),
+        'feedback_qr': generate_qr_code(feedback_url, color='#001F3F'),
+        'room_qr_codes': room_qr_codes,  # Dictionary of room_number: QR_code
     }
     return render(request, 'common_user/qr_code_page.html', context)

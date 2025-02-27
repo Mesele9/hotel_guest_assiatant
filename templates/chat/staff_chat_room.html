@@ -1,0 +1,38 @@
+<!-- templates/chat/staff_chat_room.html -->
+{% extends "base.html" %}
+{% block title %}Staff Chat - Room {{ room_number }}{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Chat with Room {{ room_number }}</h2>
+    <div id="chat-log" class="border p-3 mb-3" style="height: 300px; overflow-y: scroll;">
+        {% for message in messages %}
+        <div><strong>{{ message.sender }}:</strong> {{ message.message }}</div>
+        {% endfor %}
+    </div>
+    <form id="chat-form">
+        <div class="input-group">
+            <input type="text" id="message" class="form-control" placeholder="Type your message...">
+            <button type="submit" class="btn btn-primary">Send</button>
+        </div>
+    </form>
+</div>
+<script>
+    const roomNumber = "{{ room_number }}";
+    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomNumber + '/');
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        const chatLog = document.getElementById('chat-log');
+        const messageElement = document.createElement('div');
+        messageElement.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
+        chatLog.appendChild(messageElement);
+        chatLog.scrollTop = chatLog.scrollHeight;
+    };
+    document.getElementById('chat-form').onsubmit = function(e) {
+        e.preventDefault();
+        const messageInput = document.getElementById('message');
+        const message = messageInput.value;
+        chatSocket.send(JSON.stringify({ 'message': message, 'sender': 'staff' }));
+        messageInput.value = '';
+    };
+</script>
+{% endblock %}

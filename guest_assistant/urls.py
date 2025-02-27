@@ -25,6 +25,8 @@ urlpatterns = [
 
     path('room_directory/', include('directory.urls')),
 
+    path('chat/', include('chat.urls')),
+
 ] 
 
 if settings.DEBUG:

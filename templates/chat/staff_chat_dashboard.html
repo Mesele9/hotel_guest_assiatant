@@ -1,0 +1,16 @@
+<!-- templates/chat/staff_chat_dashboard.html -->
+{% extends "base.html" %}
+{% block title %}Staff Chat Dashboard{% endblock %}
+{% block content %}
+<div class="container">
+    <h2>Staff Chat Dashboard</h2>
+    <p>Select a room to chat with:</p>
+    <ul class="list-group">
+        {% for room in rooms %}
+        <li class="list-group-item">
+            <a href="{% url 'staff_chat_room' room_number=room %}" class="btn btn-link">Room {{ room }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
