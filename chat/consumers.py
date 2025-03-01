@@ -1,86 +1,65 @@
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 import json
-from .models import ChatMessage
+from .models import ChatSession, ChatMessage
 from django.utils import timezone
-from datetime import timedelta
 
 class ChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.room_number = self.scope['url_route']['kwargs']['room_number']
-        self.room_group_name = f'chat_{self.room_number}'
-        await self.channel_layer.group_add(self.room_group_name, self.channel_name)
+        self.session_id = self.scope['url_route']['kwargs']['session_id']
+        self.session = await database_sync_to_async(ChatSession.objects.get)(id=self.session_id)
+        self.session_group_name = f'session_{self.session_id}'
+        await self.channel_layer.group_add(self.session_group_name, self.channel_name)
         await self.accept()
-        await self.notify_room_presence()
 
-    async def notify_room_presence(self):
-        if await self.is_new_active_room():
-            await self.channel_layer.group_send(
-                'staff_dashboard',
-                {'type': 'new_active_room', 'room': self.room_number}
-            )
-
-    @database_sync_to_async
-    def is_new_active_room(self):
-        last_msg = ChatMessage.objects.filter(
-            room_number=self.room_number
-        ).order_by('-timestamp').first()
-        
-        if not last_msg:
-            return True
-        return (timezone.now() - last_msg.timestamp) > timedelta(minutes=30)
+    async def disconnect(self, close_code):
+        await self.channel_layer.group_discard(self.session_group_name, self.channel_name)
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        message = data['message']
+        message = data.get('message', '')
+        file_url = data.get('file_url', '')
         sender = data['sender']
 
-        is_new = await self.save_message(message, sender)
+        # Save message and update session
+        msg = await database_sync_to_async(ChatMessage.objects.create)(
+            session=self.session,
+            message=message,
+            file_url=file_url if file_url else None,
+            sender=sender
+        )
+        self.session.last_activity = timezone.now()
+        if sender == 'guest' and self.session.status == 'new':
+            self.session.status = 'new'  # Remains 'new' until staff responds
+            self.session.unread_count += 1
+        await database_sync_to_async(self.session.save)()
 
+        # Broadcast to session group (guest and staff viewing this session)
         await self.channel_layer.group_send(
-            self.room_group_name,
+            self.session_group_name,
             {
                 'type': 'chat_message',
                 'message': message,
+                'file_url': file_url,
                 'sender': sender,
-                'room': self.room_number
+                'session_id': self.session_id,
+                'room_number': self.session.room_number
             }
         )
 
-        # Only notify staff dashboard for guest messages
+        # Notify staff dashboard if message is from guest
         if sender == 'guest':
             await self.channel_layer.group_send(
                 'staff_dashboard',
                 {
-                    'type': 'chat_message',
-                    'room': self.room_number,
+                    'type': 'new_message',
+                    'session_id': self.session_id,
+                    'room_number': self.session.room_number,
                     'message': message,
-                    'sender': sender,
-                    'new_room': is_new
+                    'file_url': file_url,
+                    'sender': sender
                 }
             )
-
-    @database_sync_to_async
-    def save_message(self, message, sender):
-        last_msg = ChatMessage.objects.filter(
-            room_number=self.room_number
-        ).order_by('-timestamp').first()
-        
-        is_new = False
-        if last_msg:
-            inactive_period = timezone.now() - last_msg.timestamp
-            if inactive_period > timedelta(hours=2):
-                ChatMessage.objects.filter(room_number=self.room_number).delete()
-                is_new = True
-        else:
-            is_new = True
-            
-        ChatMessage.objects.create(
-            room_number=self.room_number,
-            message=message,
-            sender=sender
-        )
-        return is_new
 
     async def chat_message(self, event):
         await self.send(text_data=json.dumps(event))

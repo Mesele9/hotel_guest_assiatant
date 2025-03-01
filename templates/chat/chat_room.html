@@ -1,4 +1,3 @@
-<!-- templates/chat/chat_room.html -->
 {% extends "base.html" %}
 {% block title %}Chat with Staff - Room {{ room_number }}{% endblock %}
 {% block content %}
@@ -7,42 +6,101 @@
     <div id="chat-log" class="border p-3 mb-3 chat-log" style="height: 300px; overflow-y: scroll;">
         {% for message in messages %}
         <div class="message {{ message.sender }}">
-            <strong>{{ message.sender }}:</strong> {{ message.message }}
+            <strong>{{ message.sender }}:</strong>
+            {% if message.file_url %}
+            <a href="{{ message.file_url }}" target="_blank">View File</a>
+            {% else %}
+            {{ message.message }}
+            {% endif %}
         </div>
         {% endfor %}
     </div>
     <form id="chat-form">
         <div class="input-group">
             <input type="text" id="message" class="form-control" placeholder="Type your message...">
+            <input type="file" id="file-input" style="display: none;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('file-input').click()">Attach File</button>
             <button type="submit" class="btn btn-primary">Send</button>
         </div>
     </form>
 </div>
 
+<!-- Render the session_id safely in a JSON script tag -->
+{{ session_id|json_script:"session-id" }}
+
 <script>
-    const roomNumber = "{{ room_number }}";
-    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomNumber + '/');
+    // Retrieve and parse the session_id from the JSON script tag
+    const sessionId = JSON.parse(document.getElementById('session-id').textContent);
+    const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + sessionId + '/');
+    let inactivityTimer;
+
+    function resetInactivityTimer() {
+        clearTimeout(inactivityTimer);
+        inactivityTimer = setTimeout(() => {
+            document.getElementById('chat-log').innerHTML = '';
+        }, 10 * 60 * 1000); // 10 minutes
+    }
+
+    chatSocket.onopen = function() {
+        resetInactivityTimer();
+    };
 
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
         const chatLog = document.getElementById('chat-log');
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${data.sender}`;
-        messageDiv.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
-        chatLog.appendChild(messageDiv);
-        chatLog.scrollTop = chatLog.scrollHeight;
+        if (data.type === 'session_closed') {
+            chatLog.innerHTML = '<p>Session has been closed.</p>';
+            document.getElementById('chat-form').style.display = 'none';
+        } else {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${data.sender}`;
+            if (data.file_url) {
+                messageDiv.innerHTML = `<strong>${data.sender}:</strong> <a href="${data.file_url}" target="_blank">View File</a>`;
+            } else {
+                messageDiv.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
+            }
+            chatLog.appendChild(messageDiv);
+            chatLog.scrollTop = chatLog.scrollHeight;
+            resetInactivityTimer();
+        }
     };
+
+    document.getElementById('file-input').addEventListener('change', function() {
+        const file = this.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append('file', file);
+            fetch('/chat/upload/', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.file_url) {
+                    chatSocket.send(JSON.stringify({
+                        'message': '',
+                        'file_url': data.file_url,
+                        'sender': 'guest'
+                    }));
+                    resetInactivityTimer();
+                } else {
+                    alert('File upload failed: ' + data.error);
+                }
+            });
+        }
+    });
 
     document.getElementById('chat-form').onsubmit = function(e) {
         e.preventDefault();
         const messageInput = document.getElementById('message');
         const message = messageInput.value.trim();
-        if(message) {
-            chatSocket.send(JSON.stringify({ 
-                'message': message, 
-                'sender': 'guest' 
+        if (message) {
+            chatSocket.send(JSON.stringify({
+                'message': message,
+                'sender': 'guest'
             }));
             messageInput.value = '';
+            resetInactivityTimer();
         }
     };
 </script>

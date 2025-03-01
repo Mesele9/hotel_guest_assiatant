@@ -1,10 +1,8 @@
-# chat/staff_dashboard_consumer.py
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
-from .models import ChatMessage
 import json
+from .models import ChatSession, ChatMessage
 from django.utils import timezone
-from datetime import timedelta
 
 class StaffDashboardConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -16,62 +14,71 @@ class StaffDashboardConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        room = data['room']
-        message = data['message']
-        sender = data['sender']
+        message_type = data['type']
 
-        await self.save_message(room, message, sender)
+        if message_type == 'join_session':
+            session_id = data['session_id']
+            session_group_name = f'session_{session_id}'
+            await self.channel_layer.group_add(session_group_name, self.channel_name)
+            # Reset unread count when staff joins session
+            session = await database_sync_to_async(ChatSession.objects.get)(id=session_id)
+            session.unread_count = 0
+            await database_sync_to_async(session.save)()
 
-        await self.channel_layer.group_send(
-            f'chat_{room}',
-            {
-                'type': 'chat_message',
-                'room': room,
-                'message': message,
-                'sender': sender
-            }
-        )
+        elif message_type == 'send_message':
+            session_id = data['session_id']
+            message = data['message']
+            sender = data['sender']
+            session = await database_sync_to_async(ChatSession.objects.get)(id=session_id)
+            # Save message
+            await database_sync_to_async(ChatMessage.objects.create)(
+                session=session,
+                message=message,
+                sender=sender
+            )
+            # Update session status and last_activity
+            session.last_activity = timezone.now()
+            if session.status == 'new':
+                session.status = 'in_progress'
+            await database_sync_to_async(session.save)()
+            # Send to session group
+            await self.channel_layer.group_send(
+                f'session_{session_id}',
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                    'sender': sender,
+                    'session_id': session_id,
+                    'room_number': session.room_number
+                }
+            )
 
-        await self.channel_layer.group_send(
-            'staff_dashboard',
-            {
-                'type': 'chat_message',
-                'room': room,
-                'message': message,
-                'sender': sender
-            }
-        )
+        elif message_type == 'close_session':
+            session_id = data['session_id']
+            session = await database_sync_to_async(ChatSession.objects.get)(id=session_id)
+            session.status = 'closed'
+            await database_sync_to_async(session.save)()
+            await self.channel_layer.group_send(
+                f'session_{session_id}',
+                {
+                    'type': 'session_closed',
+                    'session_id': session_id,
+                    'room_number': session.room_number
+                }
+            )
 
     async def chat_message(self, event):
-        # Handle both messages and new room notifications
-        if event.get('new_room'):
-            await self.send(text_data=json.dumps({
-                'type': 'new_room',
-                'room': event['room']
-            }))
-        else:
-            await self.send(text_data=json.dumps(event))
+        await self.send(text_data=json.dumps(event))
 
-    async def new_active_room(self, event):
+    async def new_message(self, event):
         await self.send(text_data=json.dumps({
-            'type': 'new_room',
-            'room': event['room']
+            'type': 'new_message',
+            'session_id': event['session_id'],
+            'room_number': event['room_number'],
+            'message': event['message'],
+            'file_url': event['file_url'],
+            'sender': event['sender']
         }))
 
-    @database_sync_to_async
-    def save_message(self, room, message, sender):
-        # Similar cleanup logic as ChatConsumer
-        last_msg = ChatMessage.objects.filter(
-            room_number=room
-        ).order_by('-timestamp').first()
-        
-        if last_msg:
-            inactive_period = timezone.now() - last_msg.timestamp
-            if inactive_period > timedelta(hours=2):
-                ChatMessage.objects.filter(room_number=room).delete()
-        
-        return ChatMessage.objects.create(
-            room_number=room,
-            message=message,
-            sender=sender
-        )
+    async def session_closed(self, event):
+        await self.send(text_data=json.dumps(event))
