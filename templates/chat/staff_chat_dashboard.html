@@ -1,4 +1,3 @@
-<!-- templates/chat/staff_chat_dashboard.html -->
 {% extends "base.html" %}
 {% block title %}Staff Chat Dashboard{% endblock %}
 {% block content %}
@@ -32,7 +31,27 @@
         </div>
     </div>
 </div>
-
+<style>
+    .chat-log {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    .message {
+        padding: 8px;
+        border-radius: 10px;
+        max-width: 80%;
+    }
+    .message.guest {
+        background: #e9ecef;
+        align-self: flex-start;
+    }
+    .message.staff {
+        background: #007bff;
+        color: white;
+        align-self: flex-end;
+    }
+</style>
 <script>
     let currentRoom = null;
     const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/staff_dashboard/');
@@ -50,22 +69,6 @@
             updateBadge(data.room);
         }
     };
-
-    function addRoomToList(room) {
-        const existingRoom = document.querySelector(`.room-item[data-room="${room}"]`);
-        if(!existingRoom) {
-            const roomList = document.getElementById('room-list');
-            const li = document.createElement('li');
-            li.className = 'list-group-item d-flex justify-content-between align-items-center room-item';
-            li.dataset.room = room;
-            li.innerHTML = `
-                Room ${room}
-                <span class="badge bg-primary rounded-pill unread-count" data-room="${room}">0</span>
-            `;
-            roomList.appendChild(li);
-        }
-    }
-
 
     document.getElementById('room-list').addEventListener('click', e => {
         const roomItem = e.target.closest('.room-item');
@@ -91,7 +94,6 @@
                 'message': message,
                 'sender': 'staff'
             }));
-            appendMessage('staff', message);
             document.getElementById('message').value = '';
         }
     };
@@ -115,6 +117,21 @@
                     appendMessage(msg.sender, msg.message);
                 });
             });
+    }
+
+    function addRoomToList(room) {
+        const existingRoom = document.querySelector(`.room-item[data-room="${room}"]`);
+        if(!existingRoom) {
+            const roomList = document.getElementById('room-list');
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center room-item';
+            li.dataset.room = room;
+            li.innerHTML = `
+                Room ${room}
+                <span class="badge bg-primary rounded-pill unread-count" data-room="${room}">0</span>
+            `;
+            roomList.appendChild(li);
+        }
     }
 
     function updateBadge(room) {

@@ -1,4 +1,3 @@
-# chat/consumers.py
 from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 import json
@@ -15,7 +14,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.notify_room_presence()
 
     async def notify_room_presence(self):
-        """Notify staff dashboard about room activity"""
         if await self.is_new_active_room():
             await self.channel_layer.group_send(
                 'staff_dashboard',
@@ -24,13 +22,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def is_new_active_room(self):
-        """Check if room was inactive for more than 30 minutes"""
         last_msg = ChatMessage.objects.filter(
             room_number=self.room_number
         ).order_by('-timestamp').first()
         
         if not last_msg:
-            return True  # New room
+            return True
         return (timezone.now() - last_msg.timestamp) > timedelta(minutes=30)
 
     async def receive(self, text_data):
@@ -38,30 +35,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
         message = data['message']
         sender = data['sender']
 
-        # Save message and check room activity
         is_new = await self.save_message(message, sender)
 
-        # Broadcast to room group
         await self.channel_layer.group_send(
             self.room_group_name,
-            {'type': 'chat_message', 'message': message, 'sender': sender}
-        )
-
-        # Notify staff dashboard
-        await self.channel_layer.group_send(
-            'staff_dashboard',
             {
                 'type': 'chat_message',
-                'room': self.room_number,
                 'message': message,
                 'sender': sender,
-                'new_room': is_new
+                'room': self.room_number
             }
         )
 
+        # Only notify staff dashboard for guest messages
+        if sender == 'guest':
+            await self.channel_layer.group_send(
+                'staff_dashboard',
+                {
+                    'type': 'chat_message',
+                    'room': self.room_number,
+                    'message': message,
+                    'sender': sender,
+                    'new_room': is_new
+                }
+            )
+
     @database_sync_to_async
     def save_message(self, message, sender):
-        # Clean messages if room was inactive >2 hours
         last_msg = ChatMessage.objects.filter(
             room_number=self.room_number
         ).order_by('-timestamp').first()
