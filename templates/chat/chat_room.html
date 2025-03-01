@@ -4,9 +4,11 @@
 {% block content %}
 <div class="container">
     <h2>Chat with Staff - Room {{ room_number }}</h2>
-    <div id="chat-log" class="border p-3 mb-3" style="height: 300px; overflow-y: scroll;">
+    <div id="chat-log" class="border p-3 mb-3 chat-log" style="height: 300px; overflow-y: scroll;">
         {% for message in messages %}
-        <div><strong>{{ message.sender }}:</strong> {{ message.message }}</div>
+        <div class="message {{ message.sender }}">
+            <strong>{{ message.sender }}:</strong> {{ message.message }}
+        </div>
         {% endfor %}
     </div>
     <form id="chat-form">
@@ -16,23 +18,32 @@
         </div>
     </form>
 </div>
+
 <script>
     const roomNumber = "{{ room_number }}";
     const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + roomNumber + '/');
+
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
         const chatLog = document.getElementById('chat-log');
-        const messageElement = document.createElement('div');
-        messageElement.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
-        chatLog.appendChild(messageElement);
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${data.sender}`;
+        messageDiv.innerHTML = `<strong>${data.sender}:</strong> ${data.message}`;
+        chatLog.appendChild(messageDiv);
         chatLog.scrollTop = chatLog.scrollHeight;
     };
+
     document.getElementById('chat-form').onsubmit = function(e) {
         e.preventDefault();
         const messageInput = document.getElementById('message');
-        const message = messageInput.value;
-        chatSocket.send(JSON.stringify({ 'message': message, 'sender': 'guest' }));
-        messageInput.value = '';
+        const message = messageInput.value.trim();
+        if(message) {
+            chatSocket.send(JSON.stringify({ 
+                'message': message, 
+                'sender': 'guest' 
+            }));
+            messageInput.value = '';
+        }
     };
 </script>
 {% endblock %}

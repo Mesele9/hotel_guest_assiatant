@@ -3,6 +3,8 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from channels.db import database_sync_to_async
 from .models import ChatMessage
 import json
+from django.utils import timezone
+from datetime import timedelta
 
 class StaffDashboardConsumer(AsyncWebsocketConsumer):
     async def connect(self):
@@ -18,14 +20,8 @@ class StaffDashboardConsumer(AsyncWebsocketConsumer):
         message = data['message']
         sender = data['sender']
 
-        # Save the message to the database
-        await database_sync_to_async(ChatMessage.objects.create)(
-            room_number=room,
-            message=message,
-            sender=sender
-        )
+        await self.save_message(room, message, sender)
 
-        # Broadcast the message to the room's group
         await self.channel_layer.group_send(
             f'chat_{room}',
             {
@@ -36,10 +32,46 @@ class StaffDashboardConsumer(AsyncWebsocketConsumer):
             }
         )
 
+        await self.channel_layer.group_send(
+            'staff_dashboard',
+            {
+                'type': 'chat_message',
+                'room': room,
+                'message': message,
+                'sender': sender
+            }
+        )
+
     async def chat_message(self, event):
-        # Send message to WebSocket
+        # Handle both messages and new room notifications
+        if event.get('new_room'):
+            await self.send(text_data=json.dumps({
+                'type': 'new_room',
+                'room': event['room']
+            }))
+        else:
+            await self.send(text_data=json.dumps(event))
+
+    async def new_active_room(self, event):
         await self.send(text_data=json.dumps({
-            'room': event['room'],
-            'message': event['message'],
-            'sender': event['sender']
+            'type': 'new_room',
+            'room': event['room']
         }))
+
+    @database_sync_to_async
+    def save_message(self, room, message, sender):
+        # Similar cleanup logic as ChatConsumer
+        last_msg = ChatMessage.objects.filter(
+            room_number=room
+        ).order_by('-timestamp').first()
+        
+        if last_msg:
+            inactive_period = timezone.now() - last_msg.timestamp
+            if inactive_period > timedelta(hours=2):
+                ChatMessage.objects.filter(room_number=room).delete()
+        
+        return ChatMessage.objects.create(
+            room_number=room,
+            message=message,
+            sender=sender
+        )
