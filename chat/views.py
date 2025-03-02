@@ -2,11 +2,11 @@ from django.shortcuts import render
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from .models import ChatSession, ChatMessage
-from common_user.decorators import public_view
 from django.utils import timezone
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 import os
+from django.views.decorators.csrf import csrf_exempt
 
 def get_active_session(room_number):
     active_sessions = ChatSession.objects.filter(
@@ -17,7 +17,6 @@ def get_active_session(room_number):
         return active_sessions.first()
     return ChatSession.objects.create(room_number=room_number, status='new')
 
-@public_view
 def chat_room(request, room_number):
     session = get_active_session(room_number)
     messages = session.messages.order_by('timestamp')
@@ -42,16 +41,15 @@ def chat_history(request, session_id):
     ]
     return JsonResponse({'messages': data})
 
+@csrf_exempt  # Exempted for simplicity; use CSRF tokens in production
 def upload_file(request):
     if request.method == 'POST' and request.FILES.get('file'):
         file = request.FILES['file']
-        # Security validation
         allowed_types = ['image/jpeg', 'image/png', 'application/pdf']
         if file.content_type not in allowed_types:
             return JsonResponse({'error': 'Invalid file type'}, status=400)
         if file.size > 15 * 1024 * 1024:  # 15MB limit
             return JsonResponse({'error': 'File too large'}, status=400)
-        # Save file
         file_name = default_storage.save(os.path.join('chat_files', file.name), ContentFile(file.read()))
         file_url = default_storage.url(file_name)
         return JsonResponse({'file_url': file_url})

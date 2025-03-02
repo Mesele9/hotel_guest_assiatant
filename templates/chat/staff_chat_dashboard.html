@@ -37,26 +37,31 @@
 
 <script>
     let currentSessionId = null;
-    let currentRoomNumber = null;
     const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/staff_dashboard/');
 
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
+        const incomingSessionId = String(data.session_id);
+        const currentSessionIdStr = currentSessionId ? String(currentSessionId) : null;
+        
         if (data.type === 'new_message') {
-            const badge = document.querySelector(`.unread-count[data-session-id="${data.session_id}"]`);
-            if (badge && data.session_id !== currentSessionId) {
-                badge.textContent = parseInt(badge.textContent) + 1;
+            // Only update unread badge if the session is not active.
+            if (incomingSessionId !== currentSessionIdStr) {
+                const badge = document.querySelector(`.unread-count[data-session-id="${incomingSessionId}"]`);
+                if (badge) {
+                    badge.textContent = parseInt(badge.textContent) + 1;
+                }
             }
-            // Optional: Add sound alert
-            new Audio('/static/notification.mp3').play();
-        } else if (data.session_id === currentSessionId) {
-            if (data.type === 'session_closed') {
-                document.getElementById('chat-log').innerHTML = '<p>Session closed.</p>';
-                document.getElementById('chat-form').style.display = 'none';
-                document.getElementById('close-session').style.display = 'none';
-            } else {
-                appendMessage(data.sender, data.message, data.file_url);
-            }
+            // Do not append the message if session is active;
+            // the active session will receive it via the "chat_message" event.
+        } else if (data.type === 'chat_message' && incomingSessionId === currentSessionIdStr) {
+            appendMessage(data.sender, data.message, data.file_url);
+        } else if (data.type === 'new_session') {
+            addSessionToList(data.session_id, data.room_number);
+        } else if (data.type === 'session_closed' && incomingSessionId === currentSessionIdStr) {
+            document.getElementById('chat-log').innerHTML = '<p>Session closed.</p>';
+            document.getElementById('chat-form').style.display = 'none';
+            document.getElementById('close-session').style.display = 'none';
         }
     };
 
@@ -67,7 +72,6 @@
             const roomNumber = sessionItem.dataset.roomNumber;
             if (sessionId !== currentSessionId) {
                 currentSessionId = sessionId;
-                currentRoomNumber = roomNumber;
                 document.getElementById('current-room').textContent = roomNumber;
                 document.getElementById('chat-container').style.display = 'block';
                 document.getElementById('no-room-selected').style.display = 'none';
@@ -99,8 +103,7 @@
             formData.append('file', file);
             fetch('/chat/upload/', {
                 method: 'POST',
-                body: formData,
-                credentials: 'include'
+                body: formData
             })
             .then(response => response.json())
             .then(data => {
@@ -125,6 +128,11 @@
                 'type': 'close_session',
                 'session_id': currentSessionId
             }));
+            const sessionItem = document.querySelector(`.session-item[data-session-id="${currentSessionId}"]`);
+            if (sessionItem) sessionItem.remove();
+            document.getElementById('chat-container').style.display = 'none';
+            document.getElementById('no-room-selected').style.display = 'block';
+            currentSessionId = null;
         }
     };
 
@@ -154,6 +162,22 @@
     function resetBadge(sessionId) {
         const badge = document.querySelector(`.unread-count[data-session-id="${sessionId}"]`);
         if (badge) badge.textContent = '0';
+    }
+
+    function addSessionToList(sessionId, roomNumber) {
+        const existingSession = document.querySelector(`.session-item[data-session-id="${sessionId}"]`);
+        if (!existingSession) {
+            const sessionList = document.getElementById('session-list');
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center session-item';
+            li.dataset.sessionId = sessionId;
+            li.dataset.roomNumber = roomNumber;
+            li.innerHTML = `
+                Room ${roomNumber} - new
+                <span class="badge bg-primary rounded-pill unread-count" data-session-id="${sessionId}">1</span>
+            `;
+            sessionList.appendChild(li);
+        }
     }
 </script>
 {% endblock %}

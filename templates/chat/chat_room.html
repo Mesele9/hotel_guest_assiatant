@@ -32,18 +32,6 @@
     // Retrieve and parse the session_id from the JSON script tag
     const sessionId = JSON.parse(document.getElementById('session-id').textContent);
     const chatSocket = new WebSocket('ws://' + window.location.host + '/ws/chat/' + sessionId + '/');
-    let inactivityTimer;
-
-    function resetInactivityTimer() {
-        clearTimeout(inactivityTimer);
-        inactivityTimer = setTimeout(() => {
-            document.getElementById('chat-log').innerHTML = '';
-        }, 10 * 60 * 1000); // 10 minutes
-    }
-
-    chatSocket.onopen = function() {
-        resetInactivityTimer();
-    };
 
     chatSocket.onmessage = function(e) {
         const data = JSON.parse(e.data);
@@ -61,7 +49,6 @@
             }
             chatLog.appendChild(messageDiv);
             chatLog.scrollTop = chatLog.scrollHeight;
-            resetInactivityTimer();
         }
     };
 
@@ -82,7 +69,6 @@
                         'file_url': data.file_url,
                         'sender': 'guest'
                     }));
-                    resetInactivityTimer();
                 } else {
                     alert('File upload failed: ' + data.error);
                 }
@@ -100,7 +86,6 @@
                 'sender': 'guest'
             }));
             messageInput.value = '';
-            resetInactivityTimer();
         }
     };
 </script>
