@@ -1,3 +1,6 @@
 from django.contrib import admin
+from .models import RatingCategory, GuestFeedback, Rating
 
-# Register your models here.
+admin.site.register(RatingCategory)
+admin.site.register(GuestFeedback)
+admin.site.register(Rating)

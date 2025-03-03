@@ -1,298 +1,291 @@
 {% extends "base.html" %}
-{% load static %}
-
-{% block title %}Feedback Dashboard{% endblock %}
-
+{% load static form_tags %}
+{% block title %}Guest Feedback Form{% endblock %}
 {% block content %}
-<div class="container">
-    <div class="card mt-4">
-        <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">Feedback Analytics Dashboard</h2>
+<div class="container mb-0">
+    <div class="card shadow">
+        <div class="card-header btn-secondary text-center">
+            <h2 class="mb-0 text-white">Feedback Form</h2>
+            <p class="card-subtitle mt-2 text-white">Please fill all required fields</p>
         </div>
-        
         <div class="card-body">
-            <!-- Summary Cards -->
-            <div class="row mb-4 g-4">
-                <div class="col-md-3">
-                    <div class="card text-white bg-success h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Total Feedbacks</h5>
-                            <p class="display-4">{{ feedbacks|length }}</p>
+            <form method="post" id="feedbackForm" class="needs-validation" novalidate>
+                {% csrf_token %}
+                <!-- Error Message -->
+                <div id="form-errors" class="alert alert-danger mt-3" style="display: none;">
+                    Please correct the errors below.
+                </div>
+                <!-- Progress Bar -->
+                <div class="progress mb-4">
+                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+                <!-- Personal Information -->
+                <div class="form-section mb-5">
+                    <h2 class="h4 mb-4 border-bottom pb-2">Your Information</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.name.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.contact_no }}
+                            {% if form.contact_no.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.contact_no.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.email.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.date_of_stay }}
+                            {% if form.date_of_stay.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.date_of_stay.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form.room_number }}
+                            {% if form.room_number.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.room_number.errors.0 }}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
-                
-                <div class="col-md-3">
-                    <div class="card text-white bg-info h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Avg. Overall Rating</h5>
-                            <p class="display-4">
-                                {% if avg_ratings.overall %}
-                                    {{ avg_ratings.overall|floatformat:1 }}
-                                {% else %}
-                                    -
-                                {% endif %}
-                            </p>
+                <!-- Conditional Question -->
+                <div class="form-section mb-5">
+                    <h2 class="h4 mb-4 border-bottom pb-2">Dining Information</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form.dined_at_restaurant }}
+                            {% if form.dined_at_restaurant.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.dined_at_restaurant.errors.0 }}
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
-
-                
-                <div class="col-md-3">
-                    <div class="card text-white bg-warning h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">With Comments</h5>
-                            <p class="display-4">{{ feedback_with_comments }}</p>
+                <!-- Rating Sections -->
+                {% for category in categories %}
+                <div class="form-section mb-5 {% if category.name|lower|slugify == 'restaurant-ambience' or category.name|lower|slugify == 'food-quality' %}restaurant-section{% endif %}">
+                    <h2 class="h4 mb-4 border-bottom pb-2">{{ category.name }}</h2>
+                    <div class="rating-item mb-4">
+                        <div class="custom-star-rating" data-category-id="{{ category.id }}" data-category-name="{{ category.name }}">
+                            <span class="star" data-value="1">☆</span>
+                            <span class="star" data-value="2">☆</span>
+                            <span class="star" data-value="3">☆</span>
+                            <span class="star" data-value="4">☆</span>
+                            <span class="star" data-value="5">☆</span>
                         </div>
+                        <input type="hidden" name="rating_{{ category.id }}" id="rating_input_{{ category.id }}" {% if category.name|lower|slugify != 'restaurant-ambience' and category.name|lower|slugify != 'food-quality' %}required{% endif %}>
+                        {% if form.errors|get_item:"rating_"|add:category.id %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.errors|get_item:"rating_"|add:category.id|first }}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-                
-                <div class="col-md-3">
-                    <div class="card text-white bg-danger h-100">
-                        <div class="card-body">
-                            <h5 class="card-title">Top Employee</h5>
-                            <p class="display-4">
-                                {% if exceptional_employees.0 %}
-                                {{ exceptional_employees.0.exceptional_employee }}
-                                {% else %}
-                                -
-                                {% endif %}
-                            </p>
+                {% endfor %}
+                <!-- Additional Information -->
+                <div class="form-section mb-5">
+                    <h2 class="h4 mb-4 border-bottom pb-2">Additional Information</h2>
+                    <div class="mb-4">
+                        {{ form.exceptional_employee }}
+                        {% if form.exceptional_employee.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.exceptional_employee.errors.0 }}
                         </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-4">
+                        {{ form.additional_comments }}
+                        {% if form.additional_comments.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ form.additional_comments.errors.0 }}
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
-            </div>
-
-            <!-- Feedback Table -->
-            <h3 class="mb-3">Recent Feedback Submissions</h3>
-            <div class="table-responsive">
-                <table class="table table-hover table-striped align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Guest Name</th>
-                            <th>Stay Date</th>
-                            <th>Exceptional Staff</th>
-                            <th>Overall Rating</th>
-                            <th>Comments Preview</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for feedback in feedbacks %}
-                        <tr class="clickable-row" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#detailModal"
-                            data-name="{{ feedback.name }}"
-                            data-date="{{ feedback.date_of_stay|date:'Y-m-d' }}"
-                            data-contact="{{ feedback.contact_no }}"
-                            data-email="{{ feedback.email }}"
-                            data-employee="{{ feedback.exceptional_employee }}"
-                            data-comments="{{ feedback.additional_comments }}"
-                            data-ratings="{{ feedback.get_verbose_ratings_json }}">
-                            <td>{{ feedback.name }}</td>
-                            <td>{{ feedback.date_of_stay }}</td>
-                            <td>
-                                {% if feedback.exceptional_employee %}
-                                <span class="badge bg-success">{{ feedback.exceptional_employee }}</span>
-                                {% else %}
-                                <span class="text-muted">None</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <div class="star-visual">
-                                    {% with feedback.overall_rating|floatformat:0 as rating %}
-                                    {% for i in "12345" %}
-                                    {% if forloop.counter <= rating %}
-                                    ★
-                                    {% else %}
-                                    ☆
-                                    {% endif %}
-                                    {% endfor %}
-                                    {% endwith %}
-                                </div>
-                                <small class="text-muted">({{ feedback.overall_rating|floatformat:1 }})</small>
-                            </td>
-                            <td>
-                                {% if feedback.additional_comments %}
-                                <span class="d-inline-block text-truncate" style="max-width: 200px;">
-                                    {{ feedback.additional_comments }}
-                                </span>
-                                {% else %}
-                                <span class="text-muted">No comments</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                <!-- Honeypot -->
+                {{ form.honeypot }}
+                <div class="text-center mt-5">
+                    <button type="submit" class="btn btn-secondary">Submit Feedback</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
-<!-- Detail Modal -->
-<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h1 class="modal-title fs-5" id="detailModalLabel">Detailed Feedback Analysis</h1>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <!-- Guest Information Column -->
-                    <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-header bg-secondary text-white">
-                                Guest Information
-                            </div>
-                            <div class="card-body">
-                                <dl class="row">
-                                    <dt class="col-sm-5">Name:</dt>
-                                    <dd class="col-sm-7" id="detail-name"></dd>
-
-                                    <dt class="col-sm-5">Stay Date:</dt>
-                                    <dd class="col-sm-7" id="detail-date"></dd>
-
-                                    <dt class="col-sm-5">Contact:</dt>
-                                    <dd class="col-sm-7" id="detail-contact"></dd>
-
-                                    <dt class="col-sm-5">Email:</dt>
-                                    <dd class="col-sm-7" id="detail-email"></dd>
-                                </dl>
-                            </div>
-                        </div>
-
-                        <div class="card">
-                            <div class="card-header bg-success text-white">
-                                Recognized Employee
-                            </div>
-                            <div class="card-body">
-                                <p class="lead mb-0" id="detail-employee">
-                                    <span class="text-muted">None mentioned</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Ratings Column -->
-                    <div class="col-md-8">
-                        <div class="card">
-                            <div class="card-header bg-info text-white">
-                                Detailed Ratings Breakdown
-                            </div>
-                            <div class="card-body">
-                                <div class="row g-3" id="detail-ratings">
-                                    <!-- Ratings will be inserted here by JavaScript -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="card mt-4">
-                            <div class="card-header bg-warning text-white">
-                                Additional Comments
-                            </div>
-                            <div class="card-body">
-                                <p class="lead mb-0" id="detail-comments">
-                                    <span class="text-muted">No additional comments provided</span>
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-{% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const rows = document.querySelectorAll('.clickable-row');
-    
-    rows.forEach(row => {
-        row.addEventListener('click', function() {
-            // Basic Information
-            document.getElementById('detail-name').textContent = this.dataset.name;
-            document.getElementById('detail-date').textContent = this.dataset.date;
-            document.getElementById('detail-contact').textContent = this.dataset.contact;
-            document.getElementById('detail-email').textContent = this.dataset.email;
+    // Custom Star Rating Logic
+    const ratings = document.querySelectorAll('.custom-star-rating');
+    ratings.forEach(rating => {
+        const categoryId = rating.getAttribute('data-category-id');
+        const categoryName = rating.getAttribute('data-category-name');
+        const stars = rating.querySelectorAll('.star');
+        const input = document.getElementById('rating_input_' + categoryId);
 
-            // Exceptional Employee
-            const employeeEl = document.getElementById('detail-employee');
-            if(this.dataset.employee) {
-                employeeEl.innerHTML = `
-                    <span class="badge bg-success fs-6">
-                        ${this.dataset.employee}
-                    </span>
-                `;
-            } else {
-                employeeEl.innerHTML = '<span class="text-muted">None mentioned</span>';
-            }
-
-            // Detailed Ratings
-            const ratings = JSON.parse(this.dataset.ratings);
-            const ratingsContainer = document.getElementById('detail-ratings');
-            ratingsContainer.innerHTML = '';
-            
-            Object.entries(ratings).forEach(([category, rating]) => {
-                const ratingCard = document.createElement('div');
-                ratingCard.className = 'col-md-6';
-                ratingCard.innerHTML = `
-                    <div class="card mb-3">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <h5 class="card-title mb-0">${category}</h5>
-                                <span class="badge bg-primary rounded-pill fs-6">${rating}/5</span>
-                            </div>
-                            <div class="star-visual mt-2">
-                                ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}
-                            </div>
-                        </div>
-                    </div>
-                `;
-                ratingsContainer.appendChild(ratingCard);
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                input.value = value;
+                console.log('Rated ' + categoryName + ': ' + value);
+                updateStars(stars, value);
             });
 
-            // Comments
-            const commentsEl = document.getElementById('detail-comments');
-            if(this.dataset.comments) {
-                commentsEl.innerHTML = `
-                    <div class="bg-light p-3 rounded">
-                        <em>"${this.dataset.comments}"</em>
-                    </div>
-                `;
-            } else {
-                commentsEl.innerHTML = '<span class="text-muted">No additional comments provided</span>';
-            }
+            star.addEventListener('mouseover', function() {
+                const hoverValue = parseInt(this.getAttribute('data-value'));
+                console.log('Hovered over ' + categoryName + ': ' + hoverValue);
+                updateStars(stars, hoverValue, true);
+            });
+
+            star.addEventListener('mouseout', function() {
+                const currentValue = parseInt(input.value) || 0;
+                updateStars(stars, currentValue);
+            });
         });
+
+        function updateStars(stars, value, isHover = false) {
+            stars.forEach(star => {
+                const starValue = parseInt(star.getAttribute('data-value'));
+                if (starValue <= value) {
+                    star.textContent = '★';
+                    star.classList.add('filled');
+                    if (isHover && starValue <= value) star.classList.add('hover');
+                    else star.classList.remove('hover');
+                } else {
+                    star.textContent = '☆';
+                    star.classList.remove('filled', 'hover');
+                }
+            });
+        }
+    });
+
+    // Progress Bar and Conditional Logic
+    const sections = document.querySelectorAll('.form-section');
+    const progressBar = document.querySelector('.progress-bar');
+    const restaurantSections = document.querySelectorAll('.restaurant-section');
+    const restaurantInputs = restaurantSections.length > 0 ? Array.from(restaurantSections).map(section => section.querySelector('input[type="hidden"]')) : [];
+    const errorDiv = document.getElementById('form-errors');
+    let currentStep = 1;
+
+    function updateProgress() {
+        const visibleSections = Array.from(sections).filter(section => section.style.display !== 'none');
+        const progress = (currentStep / visibleSections.length) * 100;
+        progressBar.style.width = `${progress}%`;
+        progressBar.setAttribute('aria-valuenow', progress);
+    }
+
+    const restaurantSelect = document.getElementById('id_dined_at_restaurant');
+    restaurantSelect.addEventListener('change', function(e) {
+        const show = e.target.value === 'yes';
+        restaurantSections.forEach(section => {
+            section.style.display = show ? 'block' : 'none';
+            const input = section.querySelector('input[type="hidden"]');
+            if (input) input.required = show;
+        });
+        currentStep = show ? sections.length : sections.length - restaurantSections.length;
+        updateProgress();
+    });
+
+    // Initial state
+    restaurantSections.forEach(section => {
+        section.style.display = restaurantSelect.value === 'yes' ? 'block' : 'none';
+        const input = section.querySelector('input[type="hidden"]');
+        if (input) input.required = restaurantSelect.value === 'yes';
+    });
+    updateProgress();
+
+    // AJAX Submission
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('/feedback/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect;
+            } else {
+                console.log('Form errors:', data.errors);
+                errorDiv.style.display = 'block'; // Show in-page error message
+            }
+        })
+        .catch(error => console.error('Submission error:', error));
     });
 });
 </script>
-
 <style>
-.clickable-row {
-    cursor: pointer;
-    transition: transform 0.1s;
-}
-.clickable-row:hover {
-    transform: scale(1.005);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-.star-visual {
-    color: #ffd700;
-    font-size: 1.4rem;
-    letter-spacing: 2px;
-}
-
-#detailModal .card {
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-
-#detailModal .card-header {
-    font-weight: 600;
-}
+    .progress {
+        height: 1.5rem;
+        border-radius: 0.5rem;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+    .progress-bar {
+        background-color: #0d6efd;
+        transition: width 0.6s ease;
+    }
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875em;
+    }
+    .custom-star-rating { 
+        font-size: 24px; 
+        line-height: 1.5; 
+        min-height: 30px; 
+        display: inline-block; 
+    }
+    .custom-star-rating .star { 
+        margin-right: 5px; 
+        cursor: pointer; 
+        color: #ccc; 
+        transition: color 0.2s; 
+        display: inline-block; 
+        width: 24px; 
+        text-align: center; 
+    }
+    .custom-star-rating .star.filled { 
+        color: #ffd700; 
+    }
+    .custom-star-rating .star.hover:not(.filled) { 
+        color: #ffd700; 
+    }
+    .rating-error { 
+        font-size: 0.9rem; 
+    }
+    .alert-danger {
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid #dc3545;
+        border-radius: 0.25rem;
+        background-color: #f8d7da;
+        color: #721c24;
+    }
+    @media (max-width: 576px) {
+        .form-control, .btn { font-size: 1.1rem; }
+        .rating-item { margin-bottom: 15px; }
+    }
 </style>
-{% endblock %}
-
 {% endblock %}

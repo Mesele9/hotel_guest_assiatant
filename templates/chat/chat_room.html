@@ -57,7 +57,7 @@
         if (file) {
             const formData = new FormData();
             formData.append('file', file);
-            fetch('/chat/upload/', {
+            fetch('/chat/upload-chat/', {
                 method: 'POST',
                 body: formData
             })

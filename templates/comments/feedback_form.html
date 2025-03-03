@@ -1,25 +1,25 @@
 {% extends "base.html" %}
-{% load static %}
-
+{% load static form_tags %}
 {% block title %}Guest Feedback Form{% endblock %}
-
 {% block content %}
 <div class="container mb-0">
     <div class="card shadow">
         <div class="card-header btn-secondary text-center">
-            <h2 class="mb-0">Feedback Form</h2>
-            <p class="card-subtitle mt-2">Please fill all required fields</p>
+            <h2 class="mb-0 text-white">Feedback Form</h2>
+            <p class="card-subtitle mt-2 text-white">Please fill all required fields</p>
         </div>
         <div class="card-body">
-            <form method="post" class="needs-validation" novalidate>
+            <form method="post" id="feedbackForm" class="needs-validation" novalidate>
                 {% csrf_token %}
-                
+                <!-- Progress Bar -->
+                <div class="progress mb-4">
+                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
                 <!-- Personal Information -->
                 <div class="form-section mb-5">
                     <h2 class="h4 mb-4 border-bottom pb-2">Your Information</h2>
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <label class="form-label">{{ form.name.label }}</label>
                             {{ form.name }}
                             {% if form.name.errors %}
                             <div class="invalid-feedback d-block">
@@ -28,7 +28,6 @@
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">{{ form.contact_no.label }}</label>
                             {{ form.contact_no }}
                             {% if form.contact_no.errors %}
                             <div class="invalid-feedback d-block">
@@ -37,7 +36,6 @@
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">{{ form.email.label }}</label>
                             {{ form.email }}
                             {% if form.email.errors %}
                             <div class="invalid-feedback d-block">
@@ -46,7 +44,6 @@
                             {% endif %}
                         </div>
                         <div class="col-md-6">
-                            <label class="form-label">{{ form.date_of_stay.label }}</label>
                             {{ form.date_of_stay }}
                             {% if form.date_of_stay.errors %}
                             <div class="invalid-feedback d-block">
@@ -54,363 +51,55 @@
                             </div>
                             {% endif %}
                         </div>
+                        <div class="col-md-6">
+                            {{ form.room_number }}
+                            {% if form.room_number.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.room_number.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
                 </div>
-
-                <!-- First Impression -->
+                <!-- Conditional Question -->
                 <div class="form-section mb-5">
-                    <h2 class="h4 mb-4 border-bottom pb-2">First Impression</h2>
-                    {% include "comments/section_help_text.html" %}
-
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.welcome_rating.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.welcome_rating %}
-                            <div class="form-check form-check-inline {% if form.welcome_rating.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
+                    <h2 class="h4 mb-4 border-bottom pb-2">Dining Information</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            {{ form.dined_at_restaurant }}
+                            {% if form.dined_at_restaurant.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.dined_at_restaurant.errors.0 }}
                             </div>
-                            {% endfor %}
+                            {% endif %}
                         </div>
-                        {% if form.welcome_rating.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.welcome_rating.errors.0 }}
-                        </div>
-                        {% endif %}
                     </div>
+                </div>
+                <!-- Rating Sections -->
+                {% for category in categories %}
+                <div class="form-section mb-5 {% if category.name|lower|slugify == 'restaurant-ambience' or category.name|lower|slugify == 'food-quality' %}restaurant-section{% endif %}">
+                    <h2 class="h4 mb-4 border-bottom pb-2">{{ category.name }}</h2>
                     <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.reception_rating.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.reception_rating %}
-                            <div class="form-check form-check-inline {% if form.reception_rating.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
+                        <div class="custom-star-rating" data-category-id="{{ category.id }}" data-category-name="{{ category.name }}">
+                            <span class="star" data-value="1">☆</span>
+                            <span class="star" data-value="2">☆</span>
+                            <span class="star" data-value="3">☆</span>
+                            <span class="star" data-value="4">☆</span>
+                            <span class="star" data-value="5">☆</span>
                         </div>
-                        {% if form.reception_rating.errors %}
+                        <input type="hidden" name="rating_{{ category.id }}" id="rating_input_{{ category.id }}" {% if category.name|lower|slugify != 'restaurant-ambience' and category.name|lower|slugify != 'food-quality' %}required{% endif %}>
+                        {% if form.errors|get_item:"rating_"|add:category.id %}
                         <div class="invalid-feedback d-block">
-                            {{ form.reception_rating.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.hotel_cleanliness.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.hotel_cleanliness %}
-                            <div class="form-check form-check-inline {% if form.hotel_cleanliness.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.hotel_cleanliness.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.hotel_cleanliness.errors.0 }}
+                            {{ form.errors|get_item:"rating_"|add:category.id|first }}
                         </div>
                         {% endif %}
                     </div>
                 </div>
-
-                <!-- Room Experience -->
-                <div class="form-section mb-5">
-                    <h2 class="h4 mb-4 border-bottom pb-2">Room Experience</h2>
-                    {% include "comments/section_help_text.html" %}
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.room_cleanliness.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.room_cleanliness %}
-                            <div class="form-check form-check-inline {% if form.room_cleanliness.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.room_cleanliness.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.room_cleanliness.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.amenities_rating.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.amenities_rating %}
-                            <div class="form-check form-check-inline {% if form.amenities_rating.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.amenities_rating.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.amenities_rating.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.room_service.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.room_service %}
-                            <div class="form-check form-check-inline {% if form.room_service.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.room_service.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.room_service.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.housekeeping.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.housekeeping %}
-                            <div class="form-check form-check-inline {% if form.housekeeping.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.housekeeping.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.housekeeping.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Restaurant/Bar Experience -->
-                <div class="form-section mb-5">
-                    <h2 class="h4 mb-4 border-bottom pb-2">Restaurant & Bar Experience</h2>
-                    {% include "comments/section_help_text.html" %}
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.restaurant_ambience.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.restaurant_ambience %}
-                            <div class="form-check form-check-inline {% if form.restaurant_ambience.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.restaurant_ambience.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.restaurant_ambience.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.waiting_team.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.waiting_team %}
-                            <div class="form-check form-check-inline {% if form.waiting_team.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.waiting_team.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.waiting_team.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.complaint_response.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.complaint_response %}
-                            <div class="form-check form-check-inline {% if form.complaint_response.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.complaint_response.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.complaint_response.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.food_presentation.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.food_presentation %}
-                            <div class="form-check form-check-inline {% if form.food_presentation.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.food_presentation.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.food_presentation.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.restaurant_setup.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.restaurant_setup %}
-                            <div class="form-check form-check-inline {% if form.restaurant_setup.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.restaurant_setup.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.restaurant_setup.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.toilet_cleanliness.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.toilet_cleanliness %}
-                            <div class="form-check form-check-inline {% if form.toilet_cleanliness.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.toilet_cleanliness.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.toilet_cleanliness.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Ordering Experience -->
-                <div class="form-section mb-5">
-                    <h2 class="h4 mb-4 border-bottom pb-2">Ordering Experience</h2>
-                    {% include "comments/section_help_text.html" %}
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.staff_recommendation.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.staff_recommendation %}
-                            <div class="form-check form-check-inline {% if form.staff_recommendation.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.staff_recommendation.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.staff_recommendation.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.waiting_time.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.waiting_time %}
-                            <div class="form-check form-check-inline {% if form.waiting_time.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.waiting_time.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.waiting_time.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.food_temperature.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.food_temperature %}
-                            <div class="form-check form-check-inline {% if form.food_temperature.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.food_temperature.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.food_temperature.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.value_money.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.value_money %}
-                            <div class="form-check form-check-inline {% if form.value_money.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.value_money.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.value_money.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="rating-item mb-4">
-                        <label class="form-label">{{ form.portion_size.label }}</label>
-                        <div class="rating-group">
-                            {% for choice in form.portion_size %}
-                            <div class="form-check form-check-inline {% if form.portion_size.errors %}is-invalid{% endif %}">
-                                {{ choice.tag }}
-                                <label class="form-check-label" for="{{ choice.id_for_label }}">
-                                    {{ choice.choice_label }}
-                                </label>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% if form.portion_size.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.portion_size.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
+                {% endfor %}
                 <!-- Additional Information -->
                 <div class="form-section mb-5">
                     <h2 class="h4 mb-4 border-bottom pb-2">Additional Information</h2>
                     <div class="mb-4">
-                        <label class="form-label">{{ form.exceptional_employee.label }}</label>
                         {{ form.exceptional_employee }}
                         {% if form.exceptional_employee.errors %}
                         <div class="invalid-feedback d-block">
@@ -419,8 +108,7 @@
                         {% endif %}
                     </div>
                     <div class="mb-4">
-                        <label class="form-label">{{ form.additional_comments.label }}</label>
-                        {{ form.additional_comments }}
+                        {{ form.additional_comments | safe }}
                         {% if form.additional_comments.errors %}
                         <div class="invalid-feedback d-block">
                             {{ form.additional_comments.errors.0 }}
@@ -428,45 +116,163 @@
                         {% endif %}
                     </div>
                 </div>
-
+                <!-- Honeypot -->
+                {{ form.honeypot }}
                 <div class="text-center mt-5">
                     <button type="submit" class="btn btn-secondary">Submit Feedback</button>
-                </form>    
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Custom Star Rating Logic
+    const ratings = document.querySelectorAll('.custom-star-rating');
+    ratings.forEach(rating => {
+        const categoryId = rating.getAttribute('data-category-id');
+        const categoryName = rating.getAttribute('data-category-name');
+        const stars = rating.querySelectorAll('.star');
+        const input = document.getElementById('rating_input_' + categoryId);
+
+        stars.forEach(star => {
+            star.addEventListener('click', function() {
+                const value = parseInt(this.getAttribute('data-value'));
+                input.value = value;
+                console.log('Rated ' + categoryName + ': ' + value);
+                updateStars(stars, value);
+            });
+
+            star.addEventListener('mouseover', function() {
+                const hoverValue = parseInt(this.getAttribute('data-value'));
+                console.log('Hovered over ' + categoryName + ': ' + hoverValue);
+                updateStars(stars, hoverValue, true);
+            });
+
+            star.addEventListener('mouseout', function() {
+                const currentValue = parseInt(input.value) || 0;
+                updateStars(stars, currentValue);
+            });
+        });
+
+        function updateStars(stars, value, isHover = false) {
+            stars.forEach(star => {
+                const starValue = parseInt(star.getAttribute('data-value'));
+                if (starValue <= value) {
+                    star.textContent = '★';
+                    star.classList.add('filled');
+                    if (isHover && starValue <= value) star.classList.add('hover');
+                    else star.classList.remove('hover');
+                } else {
+                    star.textContent = '☆';
+                    star.classList.remove('filled', 'hover');
+                }
+            });
+        }
+    });
+
+    // Progress Bar and Conditional Logic
+    const sections = document.querySelectorAll('.form-section');
+    const progressBar = document.querySelector('.progress-bar');
+    const restaurantSections = document.querySelectorAll('.restaurant-section');
+    const restaurantInputs = restaurantSections.length > 0 ? Array.from(restaurantSections).map(section => section.querySelector('input[type="hidden"]')) : [];
+    let currentStep = 1;
+
+    function updateProgress() {
+        const visibleSections = Array.from(sections).filter(section => section.style.display !== 'none');
+        const progress = (currentStep / visibleSections.length) * 100;
+        progressBar.style.width = `${progress}%`;
+        progressBar.setAttribute('aria-valuenow', progress);
+    }
+
+    const restaurantSelect = document.getElementById('id_dined_at_restaurant');
+    restaurantSelect.addEventListener('change', function(e) {
+        const show = e.target.value === 'yes';
+        restaurantSections.forEach(section => {
+            section.style.display = show ? 'block' : 'none';
+            const input = section.querySelector('input[type="hidden"]');
+            if (input) input.required = show;
+        });
+        currentStep = show ? sections.length : sections.length - restaurantSections.length;
+        updateProgress();
+    });
+
+    // Initial state
+    restaurantSections.forEach(section => {
+        section.style.display = restaurantSelect.value === 'yes' ? 'block' : 'none';
+        const input = section.querySelector('input[type="hidden"]');
+        if (input) input.required = restaurantSelect.value === 'yes';
+    });
+    updateProgress();
+
+    // AJAX Submission
+    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        fetch('/feedback/', {
+            method: 'POST',
+            body: formData,
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.href = data.redirect;
+            } else {
+                console.log('Form errors:', data.errors);
+                alert('Please correct the errors and try again.');
+            }
+        })
+        .catch(error => console.error('Submission error:', error));
+    });
+});
+</script>
 <style>
-.form-check-input.is-invalid {
-    border-color: #dc3545;
-}
-.invalid-feedback {
-    color: #dc3545;
-    font-size: 0.875em;
-}
-.rating-group {
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-}
-.form-section {
-    padding: 1.5rem;
-    border-radius: 0.5rem;
-    background: #f8f9fa;
-    margin-bottom: 2rem;
-    border: 1px solid #dee2e6;
-}
-.form-check-inline {
-    margin-right: 0;
-    padding: 0.5rem 1rem;
-    border: 1px solid #dee2e6;
-    border-radius: 0.5rem;
-    background: white;
-    transition: all 0.2s;
-}
-.form-check-input:checked + .form-check-label {
-    font-weight: 600;
-    color: #0d6efd;
-}
+    .progress {
+        height: 1.5rem;
+        border-radius: 0.5rem;
+        background: #e9ecef;
+        overflow: hidden;
+    }
+    .progress-bar {
+        background-color: #0d6efd;
+        transition: width 0.6s ease;
+    }
+    .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+    .invalid-feedback {
+        color: #dc3545;
+        font-size: 0.875em;
+    }
+    .custom-star-rating { 
+        font-size: 24px; 
+        line-height: 1.5; 
+        min-height: 30px; 
+        display: inline-block; 
+    }
+    .custom-star-rating .star { 
+        margin-right: 5px; 
+        cursor: pointer; 
+        color: #ccc; 
+        transition: color 0.2s; 
+        display: inline-block; 
+        width: 24px; 
+        text-align: center; 
+    }
+    .custom-star-rating .star.filled { 
+        color: #ffd700; 
+    }
+    .custom-star-rating .star.hover:not(.filled) { 
+        color: #ffd700; 
+    }
+    .rating-error { 
+        font-size: 0.9rem; 
+    }
+    @media (max-width: 576px) {
+        .form-control, .btn { font-size: 1.1rem; }
+        .rating-item { margin-bottom: 15px; }
+    }
 </style>
 {% endblock %}

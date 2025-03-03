@@ -19,10 +19,12 @@ urlpatterns = [
 
     path('upload/', include('upload.urls')),
 
-    path('feedback/', feedback_view, name='feedback'),
-    path('feedback-success/', feedback_success_view, name='feedback_success'),
-    path('feedback-dashboard/', feedback_dashboard, name='feedback_dashboard'),
+    #path('feedback/', feedback_view, name='feedback'),
+    #path('feedback-success/', feedback_success_view, name='feedback_success'),
+    #path('feedback-dashboard/', feedback_dashboard, name='feedback_dashboard'),
 
+    path('feedback/', include('comments.urls')),
+    
     path('room_directory/', include('directory.urls')),
 
     path('chat/', include('chat.urls')),

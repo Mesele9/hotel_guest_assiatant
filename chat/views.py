@@ -42,7 +42,7 @@ def chat_history(request, session_id):
     return JsonResponse({'messages': data})
 
 @csrf_exempt  # Exempted for simplicity; use CSRF tokens in production
-def upload_file(request):
+def chat_upload_file(request):
     if request.method == 'POST' and request.FILES.get('file'):
         file = request.FILES['file']
         allowed_types = ['image/jpeg', 'image/png', 'application/pdf']

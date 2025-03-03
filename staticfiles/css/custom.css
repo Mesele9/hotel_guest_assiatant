@@ -135,3 +135,42 @@ footer a {
 footer a:hover {
     color: #f28c28; /* Orange */
 }
+
+/* static/css/styles.css (or your stylesheet) */
+.guest-message {
+    text-align: left;
+    color: blue;
+    margin: 5px 0;
+}
+
+.staff-message {
+    text-align: right;
+    color: green;
+    margin: 5px 0;
+}
+
+small {
+    color: #666;
+    font-size: 0.8em;
+}
+
+
+.chat-log {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.message {
+    padding: 8px;
+    border-radius: 10px;
+    max-width: 80%;
+}
+.message.guest {
+     background: #e9ecef;
+     align-self: flex-start;
+}
+.message.staff {
+    background: #007bff;
+    color: white;
+    align-self: flex-end;
+}

@@ -1,15 +1,9 @@
 {% extends "base.html" %}
-{% load static %}
-
-{% block title %}Guest Feedback Form{% endblock %}
-
+{% block title %}Thank You{% endblock %}
 {% block content %}
-    <div class="container text-center py-5">
-        <div class="card p-5 shadow" style="max-width: 600px; margin: 0 auto;">
-            <h1 class="text-success mb-4">🎉 Thank You! 🎉</h1>
-            <p class="lead">Your feedback has been successfully submitted.</p>
-            <p>We appreciate your valuable input!</p>
-            <a href="/room_directory" class="btn btn-primary mt-4">Return to Home</a>
-        </div>
-    </div>
+<div class="container mt-5 text-center">
+    <h1>Thank You!</h1>
+    <p>Your feedback has been submitted successfully.</p>
+    <a href="/" class="btn btn-primary">Return Home</a>
+</div>
 {% endblock %}

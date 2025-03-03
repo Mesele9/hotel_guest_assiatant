@@ -1,77 +1,79 @@
-# comments/views.py
 from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg
-from .models import GuestFeedback
+from django.http import JsonResponse
+from django.core.mail import send_mail
+from .models import GuestFeedback, Rating, RatingCategory
 from .forms import FeedbackForm
-from django.db.models import Count
-from common_user.decorators import public_view, role_required
+from django.db.models import Avg
+from textblob import TextBlob
 
+def public_view(view_func):
+    return view_func
+
+def role_required(role):
+    def decorator(view_func):
+        return login_required(view_func)
+    return decorator
 
 @public_view
 def feedback_view(request):
     if request.method == 'POST':
         form = FeedbackForm(request.POST)
         if form.is_valid():
-            form.save()
+            feedback = form.save()
+            dined = form.cleaned_data['dined_at_restaurant'] == 'yes'
+            for category in RatingCategory.objects.all():
+                field_name = f'rating_{category.id}'
+                if field_name in form.cleaned_data and (dined or category.name.lower() not in ['restaurant ambience', 'food quality']):
+                    score = form.cleaned_data[field_name]
+                    if score:  # Only save if a score is provided
+                        Rating.objects.create(feedback=feedback, category=category, score=score)
+            send_mail(
+                'New Feedback Submitted',
+                f'Feedback from {feedback.name} received for room {feedback.room_number}.',
+                'from@example.com',
+                ['staff@example.com'],
+                fail_silently=True,
+            )
+            if feedback.email:
+                send_mail(
+                    'Thank You for Your Feedback!',
+                    'We appreciate your input. Enjoy 10% off your next stay with code THANKYOU10!',
+                    'from@example.com',
+                    [feedback.email],
+                    fail_silently=True,
+                )
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': True, 'redirect': '/feedback/success/'})
             return redirect('feedback_success')
         else:
-            # Return form with errors
-            return render(request, 'comments/feedback_form.html', {'form': form})
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'errors': form.errors})
+            return render(request, 'comments/feedback_form.html', {'form': form, 'categories': RatingCategory.objects.all()})
     else:
         form = FeedbackForm()
-    return render(request, 'comments/feedback_form.html', {'form': form})
-
+    return render(request, 'comments/feedback_form.html', {'form': form, 'categories': RatingCategory.objects.all()})
 
 @public_view
 def feedback_success_view(request):
-    """Display success page after form submission"""
     return render(request, 'comments/success.html')
-
 
 @role_required('reception')
 @login_required
 def feedback_dashboard(request):
-    """Display comprehensive feedback dashboard"""
-    feedbacks = GuestFeedback.objects.all().order_by('-submission_date')
-    
-    # Calculate average ratings for all categories
-    avg_ratings = {
-        'welcome': feedbacks.aggregate(Avg('welcome_rating'))['welcome_rating__avg'],
-        'reception': feedbacks.aggregate(Avg('reception_rating'))['reception_rating__avg'],
-        'hotel_cleanliness': feedbacks.aggregate(Avg('hotel_cleanliness'))['hotel_cleanliness__avg'],
-        'room_cleanliness': feedbacks.aggregate(Avg('room_cleanliness'))['room_cleanliness__avg'],
-        'amenities': feedbacks.aggregate(Avg('amenities_rating'))['amenities_rating__avg'],
-        'room_service': feedbacks.aggregate(Avg('room_service'))['room_service__avg'],
-        'housekeeping': feedbacks.aggregate(Avg('housekeeping'))['housekeeping__avg'],
-        'restaurant_ambience': feedbacks.aggregate(Avg('restaurant_ambience'))['restaurant_ambience__avg'],
-        'waiting_team': feedbacks.aggregate(Avg('waiting_team'))['waiting_team__avg'],
-        'complaint_response': feedbacks.aggregate(Avg('complaint_response'))['complaint_response__avg'],
-        'food_presentation': feedbacks.aggregate(Avg('food_presentation'))['food_presentation__avg'],
-        'restaurant_setup': feedbacks.aggregate(Avg('restaurant_setup'))['restaurant_setup__avg'],
-        'toilet_cleanliness': feedbacks.aggregate(Avg('toilet_cleanliness'))['toilet_cleanliness__avg'],
-        'staff_recommendation': feedbacks.aggregate(Avg('staff_recommendation'))['staff_recommendation__avg'],
-        'waiting_time': feedbacks.aggregate(Avg('waiting_time'))['waiting_time__avg'],
-        'food_temperature': feedbacks.aggregate(Avg('food_temperature'))['food_temperature__avg'],
-        'value_money': feedbacks.aggregate(Avg('value_money'))['value_money__avg'],
-        'portion_size': feedbacks.aggregate(Avg('portion_size'))['portion_size__avg'],
-    }
-
-        # Calculate overall average manually
-    overall_ratings = [fb.overall_rating for fb in feedbacks if fb.overall_rating is not None]
-    avg_ratings['overall'] = sum(overall_ratings)/len(overall_ratings) if overall_ratings else 0
-
-
-    # Add additional statistics
+    feedbacks = GuestFeedback.objects.all()
+    if 'date' in request.GET:
+        feedbacks = feedbacks.filter(date_of_stay=request.GET['date'])
+    if 'sort' in request.GET:
+        feedbacks = feedbacks.order_by(request.GET['sort'])
+    else:
+        feedbacks = feedbacks.order_by('-created_at')
+    for feedback in feedbacks:
+        blob = TextBlob(feedback.additional_comments or '')
+        feedback.sentiment = blob.sentiment.polarity
+        feedback.overall_rating = feedback.ratings.aggregate(Avg('score'))['score__avg'] or 0
     context = {
         'feedbacks': feedbacks,
-        'avg_ratings': avg_ratings,
-        'total_feedbacks': feedbacks.count(),
-        'feedback_with_comments': feedbacks.exclude(additional_comments__exact='').count(),
-        'exceptional_employees': feedbacks.exclude(exceptional_employee__exact='')
-                                          .values('exceptional_employee')
-                                          .annotate(count=Count('exceptional_employee'))
-                                          .order_by('-count')
+        'categories': RatingCategory.objects.all(),
     }
-    
     return render(request, 'comments/feedback_dashboard.html', context)
