@@ -1,22 +1,97 @@
 {% extends "base.html" %}
 {% load static %}
-{% block title %}Feedback Dashboard{% endblock %}
+{% block title %}Feedback Analytics Dashboard{% endblock %}
 
 {% block content %}
 <div class="container mt-4">
-    <div class="card">
+    <div class="card shadow">
         <div class="card-header bg-primary text-white">
-            <h2 class="mb-0">Feedback Dashboard</h2>
+            <h2 class="mb-0">Feedback Analytics Dashboard</h2>
         </div>
         <div class="card-body">
+            <!-- Summary Cards -->
+            <div class="row mb-4 g-4">
+                <div class="col-md-3">
+                    <div class="card text-white bg-success h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Total Feedbacks</h5>
+                            <p class="display-6">{{ total_feedbacks }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-info h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Avg. Overall Rating</h5>
+                            <p class="display-6">{{ avg_overall_rating|floatformat:1 }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-warning h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Feedbacks with Comments</h5>
+                            <p class="display-6">{{ feedback_with_comments }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-white bg-danger h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Top Employee</h5>
+                            <p class="display-6">
+                                {% if exceptional_employees %}
+                                    {{ exceptional_employees.0.exceptional_employee }} ({{ exceptional_employees.0.count }})
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Category Averages -->
+            <h3 class="mb-3">Category Performance</h3>
+            <div class="row mb-4 g-4">
+                {% for category in category_averages %}
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ category.name }}</h5>
+                            <p class="lead">
+                                {% if category.avg_score %}
+                                    {{ category.avg_score|floatformat:1 }}/5
+                                    <span class="star-visual">
+                                        {% with category.avg_score|floatformat:0 as rating %}
+                                        {% for i in "12345" %}
+                                        {% if forloop.counter <= rating %}
+                                        ★
+                                        {% else %}
+                                        ☆
+                                        {% endif %}
+                                        {% endfor %}
+                                        {% endwith %}
+                                    </span>
+                                {% else %}
+                                    No ratings yet
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
             <!-- Filters -->
             <form method="get" class="mb-4">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <input type="date" name="date" class="form-control" 
-                               value="{{ request.GET.date }}">
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">Filter by Date</label>
+                        <input type="date" name="date" class="form-control" value="{{ request.GET.date }}">
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
+                        <label class="form-label">Sort By</label>
                         <select name="sort" class="form-control">
                             <option value="-created_at" {% if request.GET.sort == "-created_at" %}selected{% endif %}>Newest First</option>
                             <option value="created_at" {% if request.GET.sort == "created_at" %}selected{% endif %}>Oldest First</option>
@@ -24,41 +99,88 @@
                             <option value="overall_rating" {% if request.GET.sort == "overall_rating" %}selected{% endif %}>Lowest Rating</option>
                         </select>
                     </div>
-                    <div class="col-md-4">
+                    <div class="col-md-3">
                         <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'feedback_dashboard' %}" class="btn btn-secondary w-100">Clear Filters</a>
                     </div>
                 </div>
             </form>
 
             <!-- Feedback Table -->
+            <h3 class="mb-3">Recent Feedback Submissions</h3>
             <div class="table-responsive">
-                <table class="table table-striped">
+                <table class="table table-hover table-striped align-middle">
                     <thead class="table-dark">
                         <tr>
-                            <th>Guest</th>
+                            <th>Guest Name</th>
                             <th>Stay Date</th>
+                            <th>Contact</th>
                             <th>Room</th>
-                            <th>Rating</th>
-                            <th>Comments</th>
+                            <th>Overall Rating</th>
+                            <th>Sentiment</th>
+                            <th>Exceptional Staff</th>
+                            <th>Comments Preview</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for feedback in feedbacks %}
-                        <tr>
+                        <tr class="clickable-row" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#detailModal"
+                            data-name="{{ feedback.name }}"
+                            data-date="{{ feedback.date_of_stay|date:'Y-m-d' }}"
+                            data-contact="{{ feedback.contact_no }}"
+                            data-email="{{ feedback.email }}"
+                            data-room="{{ feedback.room_number }}"
+                            data-employee="{{ feedback.exceptional_employee }}"
+                            data-comments="{{ feedback.additional_comments }}"
+                            data-ratings="{{ feedback.verbose_ratings_json }}"
+                            data-sentiment="{{ feedback.sentiment|floatformat:2 }}">
                             <td>{{ feedback.name }}</td>
                             <td>{{ feedback.date_of_stay }}</td>
+                            <td>{{ feedback.contact_no }}</td>
                             <td>{{ feedback.room_number }}</td>
                             <td>
-                                <div class="star-rating small">
-                                    {% with feedback.overall_rating|floatformat:0 as stars %}
+                                <div class="star-visual">
+                                    {% with feedback.overall_rating|floatformat:0 as rating %}
                                     {% for i in "12345" %}
-                                    <i class="{% if forloop.counter <= stars %}active{% endif %}">★</i>
+                                    {% if forloop.counter <= rating %}
+                                    ★
+                                    {% else %}
+                                    ☆
+                                    {% endif %}
                                     {% endfor %}
                                     {% endwith %}
                                 </div>
-                                ({{ feedback.overall_rating|floatformat:1 }})
+                                <small class="text-muted">({{ feedback.overall_rating|floatformat:1 }})</small>
                             </td>
-                            <td>{{ feedback.additional_comments|truncatewords:10 }}</td>
+                            <td>
+                                {% if feedback.sentiment > 0 %}
+                                <span class="badge bg-success">{{ feedback.sentiment|floatformat:2 }}</span>
+                                {% elif feedback.sentiment < 0 %}
+                                <span class="badge bg-danger">{{ feedback.sentiment|floatformat:2 }}</span>
+                                {% else %}
+                                <span class="badge bg-secondary">{{ feedback.sentiment|floatformat:2 }}</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if feedback.exceptional_employee %}
+                                <span class="badge bg-success">{{ feedback.exceptional_employee }}</span>
+                                {% else %}
+                                <span class="text-muted">None</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if feedback.additional_comments %}
+                                <span class="d-inline-block text-truncate" style="max-width: 200px;">
+                                    {{ feedback.additional_comments }}
+                                </span>
+                                {% else %}
+                                <span class="text-muted">No comments</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -67,4 +189,171 @@
         </div>
     </div>
 </div>
+
+<!-- Detail Modal -->
+<div class="modal fade" id="detailModal" tabindex="-1" aria-labelledby="detailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h1 class="modal-title fs-5" id="detailModalLabel">Detailed Feedback Analysis</h1>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <!-- Guest Information Column -->
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header bg-secondary text-white">
+                                Guest Information
+                            </div>
+                            <div class="card-body">
+                                <dl class="row">
+                                    <dt class="col-sm-5">Name:</dt>
+                                    <dd class="col-sm-7" id="detail-name"></dd>
+                                    <dt class="col-sm-5">Stay Date:</dt>
+                                    <dd class="col-sm-7" id="detail-date"></dd>
+                                    <dt class="col-sm-5">Contact:</dt>
+                                    <dd class="col-sm-7" id="detail-contact"></dd>
+                                    <dt class="col-sm-5">Email:</dt>
+                                    <dd class="col-sm-7" id="detail-email"></dd>
+                                    <dt class="col-sm-5">Room:</dt>
+                                    <dd class="col-sm-7" id="detail-room"></dd>
+                                </dl>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header bg-success text-white">
+                                Recognized Employee
+                            </div>
+                            <div class="card-body">
+                                <p class="lead mb-0" id="detail-employee">
+                                    <span class="text-muted">None mentioned</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Ratings and Comments Column -->
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-header bg-info text-white">
+                                Detailed Ratings Breakdown
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3" id="detail-ratings">
+                                    <!-- Ratings will be inserted here by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card">
+                            <div class="card-header bg-warning text-white">
+                                Sentiment & Comments
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-2">
+                                    <strong>Sentiment Score:</strong> 
+                                    <span id="detail-sentiment" class="badge bg-secondary"></span>
+                                </p>
+                                <p class="lead mb-0" id="detail-comments">
+                                    <span class="text-muted">No additional comments provided</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rows = document.querySelectorAll('.clickable-row');
+    
+    rows.forEach(row => {
+        row.addEventListener('click', function() {
+            // Guest Information
+            document.getElementById('detail-name').textContent = this.dataset.name;
+            document.getElementById('detail-date').textContent = this.dataset.date;
+            document.getElementById('detail-contact').textContent = this.dataset.contact;
+            document.getElementById('detail-email').textContent = this.dataset.email || 'Not provided';
+            document.getElementById('detail-room').textContent = this.dataset.room || 'Not provided';
+
+            // Exceptional Employee
+            const employeeEl = document.getElementById('detail-employee');
+            if (this.dataset.employee) {
+                employeeEl.innerHTML = `<span class="badge bg-success fs-6">${this.dataset.employee}</span>`;
+            } else {
+                employeeEl.innerHTML = '<span class="text-muted">None mentioned</span>';
+            }
+
+            // Sentiment
+            const sentiment = parseFloat(this.dataset.sentiment);
+            const sentimentEl = document.getElementById('detail-sentiment');
+            sentimentEl.textContent = sentiment.toFixed(2);
+            sentimentEl.className = 'badge ' + (sentiment > 0 ? 'bg-success' : sentiment < 0 ? 'bg-danger' : 'bg-secondary');
+
+            // Detailed Ratings
+            const ratings = JSON.parse(this.dataset.ratings);
+            const ratingsContainer = document.getElementById('detail-ratings');
+            ratingsContainer.innerHTML = '';
+            Object.entries(ratings).forEach(([category, rating]) => {
+                const ratingCard = document.createElement('div');
+                ratingCard.className = 'col-md-6';
+                ratingCard.innerHTML = `
+                    <div class="card mb-3">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="card-title mb-0">${category}</h5>
+                                <span class="badge bg-primary rounded-pill fs-6">${rating}/5</span>
+                            </div>
+                            <div class="star-visual mt-2">
+                                ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+                ratingsContainer.appendChild(ratingCard);
+            });
+
+            // Comments
+            const commentsEl = document.getElementById('detail-comments');
+            if (this.dataset.comments) {
+                commentsEl.innerHTML = `<div class="bg-light p-3 rounded"><em>"${this.dataset.comments}"</em></div>`;
+            } else {
+                commentsEl.innerHTML = '<span class="text-muted">No additional comments provided</span>';
+            }
+        });
+    });
+});
+</script>
+<style>
+    .clickable-row {
+        cursor: pointer;
+        transition: transform 0.1s;
+    }
+    .clickable-row:hover {
+        transform: scale(1.005);
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .star-visual {
+        color: #ffd700;
+        font-size: 1.4rem;
+        letter-spacing: 2px;
+    }
+    #detailModal .card {
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+    #detailModal .card-header {
+        font-weight: 600;
+    }
+    .btn-close-white {
+        filter: invert(1);
+    }
+    .form-label {
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+    }
+</style>
 {% endblock %}
