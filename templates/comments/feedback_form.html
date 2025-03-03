@@ -11,12 +11,16 @@
         <div class="card-body">
             <form method="post" id="feedbackForm" class="needs-validation" novalidate>
                 {% csrf_token %}
+                <!-- Error Message -->
+                <div id="form-errors" class="alert alert-danger mt-3" style="display: none;">
+                    Please correct the errors below.
+                </div>
                 <!-- Progress Bar -->
                 <div class="progress mb-4">
                     <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
                 <!-- Personal Information -->
-                <div class="form-section mb-5">
+                <div class="form-section mb-5" data-step="1">
                     <h2 class="h4 mb-4 border-bottom pb-2">Your Information</h2>
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -62,7 +66,7 @@
                     </div>
                 </div>
                 <!-- Conditional Question -->
-                <div class="form-section mb-5">
+                <div class="form-section mb-5" data-step="2">
                     <h2 class="h4 mb-4 border-bottom pb-2">Dining Information</h2>
                     <div class="row g-3">
                         <div class="col-md-6">
@@ -80,7 +84,7 @@
                 <div class="form-section mb-5 {% if category.name|lower|slugify == 'restaurant-ambience' or category.name|lower|slugify == 'food-quality' %}restaurant-section{% endif %}">
                     <h2 class="h4 mb-4 border-bottom pb-2">{{ category.name }}</h2>
                     <div class="rating-item mb-4">
-                        <div class="custom-star-rating" data-category-id="{{ category.id }}" data-category-name="{{ category.name }}">
+                        <div class="custom-star-rating {% if form.errors|get_item:'rating_'|add:category.id %}is-invalid{% endif %}" data-category-id="{{ category.id }}" data-category-name="{{ category.name }}">
                             <span class="star" data-value="1">☆</span>
                             <span class="star" data-value="2">☆</span>
                             <span class="star" data-value="3">☆</span>
@@ -97,7 +101,7 @@
                 </div>
                 {% endfor %}
                 <!-- Additional Information -->
-                <div class="form-section mb-5">
+                <div class="form-section mb-5" data-step="3">
                     <h2 class="h4 mb-4 border-bottom pb-2">Additional Information</h2>
                     <div class="mb-4">
                         {{ form.exceptional_employee }}
@@ -108,7 +112,7 @@
                         {% endif %}
                     </div>
                     <div class="mb-4">
-                        {{ form.additional_comments | safe }}
+                        {{ form.additional_comments }}
                         {% if form.additional_comments.errors %}
                         <div class="invalid-feedback d-block">
                             {{ form.additional_comments.errors.0 }}
@@ -142,6 +146,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 input.value = value;
                 console.log('Rated ' + categoryName + ': ' + value);
                 updateStars(stars, value);
+                updateProgress();
+                rating.classList.remove('is-invalid'); // Clear error on rating
             });
 
             star.addEventListener('mouseover', function() {
@@ -172,18 +178,52 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Progress Bar and Conditional Logic
+    // Progress Bar Logic
     const sections = document.querySelectorAll('.form-section');
     const progressBar = document.querySelector('.progress-bar');
     const restaurantSections = document.querySelectorAll('.restaurant-section');
     const restaurantInputs = restaurantSections.length > 0 ? Array.from(restaurantSections).map(section => section.querySelector('input[type="hidden"]')) : [];
-    let currentStep = 1;
+    const errorDiv = document.getElementById('form-errors');
+    const personalInputs = document.querySelectorAll('input:not([type="hidden"]):not([name^="rating_"]), select');
+    const ratingInputs = document.querySelectorAll('input[type="hidden"][name^="rating_"]');
+
+    let totalRequiredSteps = personalInputs.length; // Name, contact, date, room, dining (email optional)
+    const nonRestaurantRatings = Array.from(ratingInputs).filter(input => !input.closest('.restaurant-section'));
+    const restaurantRatings = Array.from(ratingInputs).filter(input => input.closest('.restaurant-section'));
+    totalRequiredSteps += nonRestaurantRatings.length; // Add non-restaurant ratings
 
     function updateProgress() {
-        const visibleSections = Array.from(sections).filter(section => section.style.display !== 'none');
-        const progress = (currentStep / visibleSections.length) * 100;
+        let completedSteps = 0;
+
+        // Count completed personal info fields (required only)
+        personalInputs.forEach(input => {
+            if (input.name !== 'email' && input.value.trim()) {
+                completedSteps++;
+            }
+        });
+
+        // Count completed non-restaurant ratings (always required)
+        nonRestaurantRatings.forEach(input => {
+            if (input.value) {
+                completedSteps++;
+            }
+        });
+
+        // Count completed restaurant ratings (only if visible)
+        const diningValue = document.getElementById('id_dined_at_restaurant').value;
+        if (diningValue === 'yes') {
+            restaurantRatings.forEach(input => {
+                if (input.value) {
+                    completedSteps++;
+                }
+            });
+        }
+
+        const totalSteps = diningValue === 'yes' ? totalRequiredSteps + restaurantRatings.length : totalRequiredSteps;
+        const progress = totalSteps > 0 ? (completedSteps / totalSteps) * 100 : 0;
         progressBar.style.width = `${progress}%`;
         progressBar.setAttribute('aria-valuenow', progress);
+        console.log(`Progress: ${completedSteps}/${totalSteps} = ${progress}%`);
     }
 
     const restaurantSelect = document.getElementById('id_dined_at_restaurant');
@@ -194,15 +234,19 @@ document.addEventListener('DOMContentLoaded', function() {
             const input = section.querySelector('input[type="hidden"]');
             if (input) input.required = show;
         });
-        currentStep = show ? sections.length : sections.length - restaurantSections.length;
         updateProgress();
     });
 
-    // Initial state
+    // Initial state for restaurant sections
     restaurantSections.forEach(section => {
         section.style.display = restaurantSelect.value === 'yes' ? 'block' : 'none';
         const input = section.querySelector('input[type="hidden"]');
         if (input) input.required = restaurantSelect.value === 'yes';
+    });
+
+    // Update progress on input changes
+    personalInputs.forEach(input => {
+        input.addEventListener('input', updateProgress);
     });
     updateProgress();
 
@@ -221,7 +265,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.location.href = data.redirect;
             } else {
                 console.log('Form errors:', data.errors);
-                alert('Please correct the errors and try again.');
+                errorDiv.style.display = 'block'; // Show in-page error message
+                // Highlight invalid star ratings
+                ratings.forEach(rating => {
+                    const categoryId = rating.getAttribute('data-category-id');
+                    if (data.errors[`rating_${categoryId}`]) {
+                        rating.classList.add('is-invalid');
+                    }
+                });
             }
         })
         .catch(error => console.error('Submission error:', error));
@@ -251,6 +302,11 @@ document.addEventListener('DOMContentLoaded', function() {
         line-height: 1.5; 
         min-height: 30px; 
         display: inline-block; 
+        padding: 2px; /* Small padding for border visibility */
+    }
+    .custom-star-rating.is-invalid {
+        border: 1px solid #dc3545; /* Red border for invalid state */
+        border-radius: 0.25rem;
     }
     .custom-star-rating .star { 
         margin-right: 5px; 
@@ -269,6 +325,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     .rating-error { 
         font-size: 0.9rem; 
+    }
+    .alert-danger {
+        padding: 0.75rem 1.25rem;
+        margin-bottom: 1rem;
+        border: 1px solid #dc3545;
+        border-radius: 0.25rem;
+        background-color: #f8d7da;
+        color: #721c24;
     }
     @media (max-width: 576px) {
         .form-control, .btn { font-size: 1.1rem; }

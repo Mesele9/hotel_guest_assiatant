@@ -93,14 +93,37 @@ body {
 }
 
 /* Forms */
+.form-section {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    background: #f8f9fa;
+    margin-bottom: 2rem;
+    border: 1px solid #dee2e6;
+}
+
 .form-control {
     border-radius: 8px;
     border: 2px solid #a7c957; /* Sage Green */
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    background: white;
+    transition: all 0.2s;
 }
 
 .form-control:focus {
     border-color: #f28c28; /* Orange */
     box-shadow: 0 0 0 0.2rem rgba(242, 140, 40, 0.25);
+}
+
+.form-control::placeholder {
+    color: #6c757d;
+    font-weight: 400;
+    opacity: 0.8;
+}
+
+textarea.form-control {
+    resize: vertical;
 }
 
 /* Alerts */

@@ -1,291 +1,70 @@
 {% extends "base.html" %}
-{% load static form_tags %}
-{% block title %}Guest Feedback Form{% endblock %}
+{% load static %}
+{% block title %}Feedback Dashboard{% endblock %}
+
 {% block content %}
-<div class="container mb-0">
-    <div class="card shadow">
-        <div class="card-header btn-secondary text-center">
-            <h2 class="mb-0 text-white">Feedback Form</h2>
-            <p class="card-subtitle mt-2 text-white">Please fill all required fields</p>
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">Feedback Dashboard</h2>
         </div>
         <div class="card-body">
-            <form method="post" id="feedbackForm" class="needs-validation" novalidate>
-                {% csrf_token %}
-                <!-- Error Message -->
-                <div id="form-errors" class="alert alert-danger mt-3" style="display: none;">
-                    Please correct the errors below.
-                </div>
-                <!-- Progress Bar -->
-                <div class="progress mb-4">
-                    <div class="progress-bar" role="progressbar" style="width: 0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-                </div>
-                <!-- Personal Information -->
-                <div class="form-section mb-5">
-                    <h2 class="h4 mb-4 border-bottom pb-2">Your Information</h2>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            {{ form.name }}
-                            {% if form.name.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.name.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            {{ form.contact_no }}
-                            {% if form.contact_no.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.contact_no.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            {{ form.email }}
-                            {% if form.email.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.email.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            {{ form.date_of_stay }}
-                            {% if form.date_of_stay.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.date_of_stay.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
-                        <div class="col-md-6">
-                            {{ form.room_number }}
-                            {% if form.room_number.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.room_number.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
+            <!-- Filters -->
+            <form method="get" class="mb-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <input type="date" name="date" class="form-control" 
+                               value="{{ request.GET.date }}">
                     </div>
-                </div>
-                <!-- Conditional Question -->
-                <div class="form-section mb-5">
-                    <h2 class="h4 mb-4 border-bottom pb-2">Dining Information</h2>
-                    <div class="row g-3">
-                        <div class="col-md-6">
-                            {{ form.dined_at_restaurant }}
-                            {% if form.dined_at_restaurant.errors %}
-                            <div class="invalid-feedback d-block">
-                                {{ form.dined_at_restaurant.errors.0 }}
-                            </div>
-                            {% endif %}
-                        </div>
+                    <div class="col-md-4">
+                        <select name="sort" class="form-control">
+                            <option value="-created_at" {% if request.GET.sort == "-created_at" %}selected{% endif %}>Newest First</option>
+                            <option value="created_at" {% if request.GET.sort == "created_at" %}selected{% endif %}>Oldest First</option>
+                            <option value="-overall_rating" {% if request.GET.sort == "-overall_rating" %}selected{% endif %}>Highest Rating</option>
+                            <option value="overall_rating" {% if request.GET.sort == "overall_rating" %}selected{% endif %}>Lowest Rating</option>
+                        </select>
                     </div>
-                </div>
-                <!-- Rating Sections -->
-                {% for category in categories %}
-                <div class="form-section mb-5 {% if category.name|lower|slugify == 'restaurant-ambience' or category.name|lower|slugify == 'food-quality' %}restaurant-section{% endif %}">
-                    <h2 class="h4 mb-4 border-bottom pb-2">{{ category.name }}</h2>
-                    <div class="rating-item mb-4">
-                        <div class="custom-star-rating" data-category-id="{{ category.id }}" data-category-name="{{ category.name }}">
-                            <span class="star" data-value="1">☆</span>
-                            <span class="star" data-value="2">☆</span>
-                            <span class="star" data-value="3">☆</span>
-                            <span class="star" data-value="4">☆</span>
-                            <span class="star" data-value="5">☆</span>
-                        </div>
-                        <input type="hidden" name="rating_{{ category.id }}" id="rating_input_{{ category.id }}" {% if category.name|lower|slugify != 'restaurant-ambience' and category.name|lower|slugify != 'food-quality' %}required{% endif %}>
-                        {% if form.errors|get_item:"rating_"|add:category.id %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.errors|get_item:"rating_"|add:category.id|first }}
-                        </div>
-                        {% endif %}
+                    <div class="col-md-4">
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
                     </div>
-                </div>
-                {% endfor %}
-                <!-- Additional Information -->
-                <div class="form-section mb-5">
-                    <h2 class="h4 mb-4 border-bottom pb-2">Additional Information</h2>
-                    <div class="mb-4">
-                        {{ form.exceptional_employee }}
-                        {% if form.exceptional_employee.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.exceptional_employee.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                    <div class="mb-4">
-                        {{ form.additional_comments }}
-                        {% if form.additional_comments.errors %}
-                        <div class="invalid-feedback d-block">
-                            {{ form.additional_comments.errors.0 }}
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-                <!-- Honeypot -->
-                {{ form.honeypot }}
-                <div class="text-center mt-5">
-                    <button type="submit" class="btn btn-secondary">Submit Feedback</button>
                 </div>
             </form>
+
+            <!-- Feedback Table -->
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Guest</th>
+                            <th>Stay Date</th>
+                            <th>Room</th>
+                            <th>Rating</th>
+                            <th>Comments</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for feedback in feedbacks %}
+                        <tr>
+                            <td>{{ feedback.name }}</td>
+                            <td>{{ feedback.date_of_stay }}</td>
+                            <td>{{ feedback.room_number }}</td>
+                            <td>
+                                <div class="star-rating small">
+                                    {% with feedback.overall_rating|floatformat:0 as stars %}
+                                    {% for i in "12345" %}
+                                    <i class="{% if forloop.counter <= stars %}active{% endif %}">★</i>
+                                    {% endfor %}
+                                    {% endwith %}
+                                </div>
+                                ({{ feedback.overall_rating|floatformat:1 }})
+                            </td>
+                            <td>{{ feedback.additional_comments|truncatewords:10 }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Custom Star Rating Logic
-    const ratings = document.querySelectorAll('.custom-star-rating');
-    ratings.forEach(rating => {
-        const categoryId = rating.getAttribute('data-category-id');
-        const categoryName = rating.getAttribute('data-category-name');
-        const stars = rating.querySelectorAll('.star');
-        const input = document.getElementById('rating_input_' + categoryId);
-
-        stars.forEach(star => {
-            star.addEventListener('click', function() {
-                const value = parseInt(this.getAttribute('data-value'));
-                input.value = value;
-                console.log('Rated ' + categoryName + ': ' + value);
-                updateStars(stars, value);
-            });
-
-            star.addEventListener('mouseover', function() {
-                const hoverValue = parseInt(this.getAttribute('data-value'));
-                console.log('Hovered over ' + categoryName + ': ' + hoverValue);
-                updateStars(stars, hoverValue, true);
-            });
-
-            star.addEventListener('mouseout', function() {
-                const currentValue = parseInt(input.value) || 0;
-                updateStars(stars, currentValue);
-            });
-        });
-
-        function updateStars(stars, value, isHover = false) {
-            stars.forEach(star => {
-                const starValue = parseInt(star.getAttribute('data-value'));
-                if (starValue <= value) {
-                    star.textContent = '★';
-                    star.classList.add('filled');
-                    if (isHover && starValue <= value) star.classList.add('hover');
-                    else star.classList.remove('hover');
-                } else {
-                    star.textContent = '☆';
-                    star.classList.remove('filled', 'hover');
-                }
-            });
-        }
-    });
-
-    // Progress Bar and Conditional Logic
-    const sections = document.querySelectorAll('.form-section');
-    const progressBar = document.querySelector('.progress-bar');
-    const restaurantSections = document.querySelectorAll('.restaurant-section');
-    const restaurantInputs = restaurantSections.length > 0 ? Array.from(restaurantSections).map(section => section.querySelector('input[type="hidden"]')) : [];
-    const errorDiv = document.getElementById('form-errors');
-    let currentStep = 1;
-
-    function updateProgress() {
-        const visibleSections = Array.from(sections).filter(section => section.style.display !== 'none');
-        const progress = (currentStep / visibleSections.length) * 100;
-        progressBar.style.width = `${progress}%`;
-        progressBar.setAttribute('aria-valuenow', progress);
-    }
-
-    const restaurantSelect = document.getElementById('id_dined_at_restaurant');
-    restaurantSelect.addEventListener('change', function(e) {
-        const show = e.target.value === 'yes';
-        restaurantSections.forEach(section => {
-            section.style.display = show ? 'block' : 'none';
-            const input = section.querySelector('input[type="hidden"]');
-            if (input) input.required = show;
-        });
-        currentStep = show ? sections.length : sections.length - restaurantSections.length;
-        updateProgress();
-    });
-
-    // Initial state
-    restaurantSections.forEach(section => {
-        section.style.display = restaurantSelect.value === 'yes' ? 'block' : 'none';
-        const input = section.querySelector('input[type="hidden"]');
-        if (input) input.required = restaurantSelect.value === 'yes';
-    });
-    updateProgress();
-
-    // AJAX Submission
-    document.getElementById('feedbackForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = new FormData(this);
-        fetch('/feedback/', {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                window.location.href = data.redirect;
-            } else {
-                console.log('Form errors:', data.errors);
-                errorDiv.style.display = 'block'; // Show in-page error message
-            }
-        })
-        .catch(error => console.error('Submission error:', error));
-    });
-});
-</script>
-<style>
-    .progress {
-        height: 1.5rem;
-        border-radius: 0.5rem;
-        background: #e9ecef;
-        overflow: hidden;
-    }
-    .progress-bar {
-        background-color: #0d6efd;
-        transition: width 0.6s ease;
-    }
-    .form-control.is-invalid {
-        border-color: #dc3545;
-    }
-    .invalid-feedback {
-        color: #dc3545;
-        font-size: 0.875em;
-    }
-    .custom-star-rating { 
-        font-size: 24px; 
-        line-height: 1.5; 
-        min-height: 30px; 
-        display: inline-block; 
-    }
-    .custom-star-rating .star { 
-        margin-right: 5px; 
-        cursor: pointer; 
-        color: #ccc; 
-        transition: color 0.2s; 
-        display: inline-block; 
-        width: 24px; 
-        text-align: center; 
-    }
-    .custom-star-rating .star.filled { 
-        color: #ffd700; 
-    }
-    .custom-star-rating .star.hover:not(.filled) { 
-        color: #ffd700; 
-    }
-    .rating-error { 
-        font-size: 0.9rem; 
-    }
-    .alert-danger {
-        padding: 0.75rem 1.25rem;
-        margin-bottom: 1rem;
-        border: 1px solid #dc3545;
-        border-radius: 0.25rem;
-        background-color: #f8d7da;
-        color: #721c24;
-    }
-    @media (max-width: 576px) {
-        .form-control, .btn { font-size: 1.1rem; }
-        .rating-item { margin-bottom: 15px; }
-    }
-</style>
 {% endblock %}
