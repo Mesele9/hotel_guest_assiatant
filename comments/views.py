@@ -9,6 +9,8 @@ from django.db.models.functions import Coalesce
 from textblob import TextBlob
 import json
 from common_user.decorators import public_view, role_required
+from django.conf import settings 
+from .tasks import send_feedback_email
 
 
 @public_view
@@ -24,21 +26,20 @@ def feedback_view(request):
                     score = form.cleaned_data[field_name]
                     if score:
                         Rating.objects.create(feedback=feedback, category=category, score=score)
-            send_mail(
+            # Send staff email asynchronously
+            send_feedback_email.delay(
                 'New Feedback Submitted',
                 f'Feedback from {feedback.name} received for room {feedback.room_number}.',
-                'from@example.com',
-                ['staff@example.com'],
-                fail_silently=True,
+                ['staff@example.com']
             )
             if feedback.email:
-                send_mail(
+                # Send success email asynchronously
+                send_feedback_email.delay(
                     'Thank You for Your Feedback!',
-                    'We appreciate your input. Enjoy 10% off your next stay with code THANKYOU10!',
-                    'from@example.com',
-                    [feedback.email],
-                    fail_silently=True,
+                    'We appreciate your input.',
+                    [feedback.email]
                 )
+
             if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
                 return JsonResponse({'success': True, 'redirect': '/feedback/success/'})
             return redirect('feedback_success')

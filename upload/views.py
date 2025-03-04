@@ -6,8 +6,10 @@ from django.conf import settings
 from .models import File, UploadedFile
 import os
 from common_user.decorators import public_view, role_required
+from django.views.decorators.csrf import csrf_exempt
 
 
+@csrf_exempt
 @public_view
 def upload_file(request):
     success_message = None

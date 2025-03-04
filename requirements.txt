@@ -21,8 +21,10 @@ Django==4.2.19
 hyperlink==21.0.0
 idna==3.10
 incremental==24.7.2
+joblib==1.4.2
 kombu==5.4.2
 msgpack==1.1.0
+nltk==3.9.1
 pillow==10.4.0
 prompt-toolkit==3.0.50
 pyasn1==0.6.1
@@ -31,12 +33,16 @@ pycparser==2.22
 pyOpenSSL==25.0.0
 pypng==0.20220715.0
 python-dateutil==2.9.0.post0
+python-decouple==3.8
 qrcode==7.4.2
 redis==5.2.1
+regex==2024.11.6
 service-identity==24.2.0
 six==1.17.0
 sqlparse==0.5.3
+textblob==0.18.0.post0
 tomli==2.2.1
+tqdm==4.67.1
 twisted==24.11.0
 txaio==23.1.1
 typing-extensions==4.12.2
