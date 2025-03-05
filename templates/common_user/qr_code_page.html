@@ -1,4 +1,4 @@
-<!-- qr_code_page.html -->
+<!-- common_user/templates/common_user/qr_code_page.html -->
 {% extends 'base.html' %}
 
 {% block content %}
@@ -58,34 +58,33 @@
             </div>
         </div>
 
-                <!-- Feedback QR Code -->
-                <div class="col-md-4 mb-4">
-                    <div class="card shadow">
-                        <div class="card-header bg-info text-white">
-                            <h3 class="mb-0">Feedback QR Code</h3>
-                        </div>
-                        <div class="card-body text-center">
-                            <img src="data:image/png;base64,{{ feedback_qr }}" 
-                                 alt="Feedback QR Code" 
-                                 class="img-fluid mb-3"
-                                 style="max-width: 250px;">
-                            <div class="mb-3">
-                                <a href="{{ feedback_url }}" target="_blank" 
-                                   class="text-decoration-none">
-                                   <i class="fas fa-link"></i> {{ feedback_url }}
-                                </a>
-                            </div>
-                            <a href="data:image/png;base64,{{ feedback_qr }}" 
-                               download="feedback_qr.png" 
-                               class="btn bg-info">
-                                <i class="fas fa-download me-2"></i>Download
-                            </a>
-                        </div>
-                    </div>
+        <!-- Feedback QR Code -->
+        <div class="col-md-4 mb-4">
+            <div class="card shadow">
+                <div class="card-header bg-info text-white">
+                    <h3 class="mb-0">Feedback QR Code</h3>
                 </div>
+                <div class="card-body text-center">
+                    <img src="data:image/png;base64,{{ feedback_qr }}" 
+                         alt="Feedback QR Code" 
+                         class="img-fluid mb-3"
+                         style="max-width: 250px;">
+                    <div class="mb-3">
+                        <a href="{{ feedback_url }}" target="_blank" 
+                           class="text-decoration-none">
+                           <i class="fas fa-link"></i> {{ feedback_url }}
+                        </a>
+                    </div>
+                    <a href="data:image/png;base64,{{ feedback_qr }}" 
+                       download="feedback_qr.png" 
+                       class="btn bg-info">
+                        <i class="fas fa-download me-2"></i>Download
+                    </a>
+                </div>
+            </div>
+        </div>
 
-            <!-- Room Directory QR Code -->
-                        <!-- Room QR Codes Section -->
+        <!-- Room QR Codes Section -->
         <h2 class="mt-5 mb-4">Room QR Codes</h2>
         <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
             {% for room, qr_code in room_qr_codes.items %}
@@ -99,7 +98,6 @@
                             alt="QR Code for Room {{ room }}" 
                             class="img-fluid mb-3"
                             style="max-width: 200px;">
-
                         <div class="d-grid gap-2">
                             <a href="data:image/png;base64,{{ qr_code }}" 
                             download="Room_{{ room }}_QR.png" 
@@ -112,7 +110,6 @@
             </div>
             {% endfor %}
         </div>
-
     </div>
 </div>
 {% endblock %}

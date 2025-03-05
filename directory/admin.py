@@ -44,3 +44,5 @@ class RoomTypeAdmin(admin.ModelAdmin):
 class LocalAttractionAdmin(admin.ModelAdmin):
     list_display = ('name', 'distance_from_hotel')
     search_fields = ('name', 'description')
+
+admin.site.register(Room)

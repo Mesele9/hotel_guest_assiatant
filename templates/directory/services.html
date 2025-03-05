@@ -1,55 +1,59 @@
+<!-- templates/directory/services.html -->
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+{% endblock %}
 
 {% block title %}Hotel Services{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-lg-10 mx-auto">
-        <h1 class="display-4 mb-5 text-primary">Our Services</h1>
+        <h3 class="display-4 mb-3 text-primary">Our Services</h3>
+        <p class="mute">Click on any service below to see detailed information about how it can enhance your stay. Explore additional 24/7 service options available for immediate assistance.</p>
+
         
-        <div class="row row-cols-1 row-cols-md-2 g-4">
+        <div class="accordion" id="servicesAccordion">
             {% for service in services %}
-            <div class="col">
-                <div class="card h-100 shadow">
-                    <div class="card-body">
-                        <div class="d-flex align-items-center mb-3">
-                            <div class="bg-primary p-3 rounded me-3">
-                                <i class="fas {{ service.icon }} fa-2x text-white"></i>
-                            </div>
-                            <div>
-                                <h3 class="card-title mb-0">{{ service.name }}</h3>
-                                {% if service.available_24h %}
-                                <span class="badge bg-success mt-2">24/7 Available</span>
-                                {% endif %}
-                            </div>
+                <div class="accordion-item service-card">
+                    <h2 class="accordion-header" id="heading{{ service.id }}">
+                        <button class="accordion-button {% if forloop.first %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapse{{ service.id }}" aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" aria-controls="collapse{{ service.id }}">
+                            <i class="fas {{ service.icon }} fa-2x text-primary me-3"></i>
+                            <span class="fw-bold">{{ service.name }}</span>
+                            {% if service.available_24h %}
+                                <span class="badge bg-success ms-2">24/7</span>
+                            {% endif %}
+                        </button>
+                    </h2>
+                    <div id="collapse{{ service.id }}" class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" aria-labelledby="heading{{ service.id }}" data-bs-parent="#servicesAccordion">
+                        <div class="accordion-body">
+                            <p>{{ service.description }}</p>
                         </div>
-                        <p class="card-text">{{ service.description }}</p>
                     </div>
                 </div>
-            </div>
+            {% empty %}
+                <p>No services available at this time.</p>
             {% endfor %}
         </div>
 
         {% if 24h_services %}
-        <div class="mt-5">
-            <div class="card shadow">
-                <div class="card-body">
-                    <h2 class="mb-4 text-primary">
-                        <i class="fas fa-clock me-2"></i>24/7 Services
-                    </h2>
-                    <div class="row row-cols-2 row-cols-lg-4 g-4">
-                        {% for service in 24h_services %}
+            <div class="mt-5">
+                <h2 class="mb-4 text-primary">
+                    <i class="fas fa-clock me-2"></i>24/7 Services Quick View
+                </h2>
+                <div class="row row-cols-2 row-cols-lg-4 g-4">
+                    {% for service in 24h_services %}
                         <div class="col">
-                            <div class="text-center p-3 border rounded">
+                            <div class="text-center p-3 border rounded service-quick-card">
                                 <i class="fas {{ service.icon }} fa-2x text-primary mb-2"></i>
                                 <h5 class="mb-0">{{ service.name }}</h5>
                             </div>
                         </div>
-                        {% endfor %}
-                    </div>
+                    {% endfor %}
                 </div>
             </div>
-        </div>
         {% endif %}
     </div>
 </div>

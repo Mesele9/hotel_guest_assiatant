@@ -2,6 +2,7 @@
 from pathlib import Path
 import os
 from decouple import config
+import logging
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -31,14 +32,15 @@ INSTALLED_APPS = [
     'chat',
     'comments',
     'menu',
-    'directory',
+    #'directory',
+    'directory.apps.DirectoryConfig',
     'upload',
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',  # Add this line
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -89,12 +91,14 @@ LOGGING = {
         },
     },
     'loggers': {
-        '': {
+        # Adjust the logger name if needed or use the root logger
+        'directory': {
             'handlers': ['console'],
             'level': 'INFO',
         },
     },
 }
+
 
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
@@ -172,3 +176,14 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = config('EMAIL_HOST_USER')  # Replace with your Gmail address
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')   # Replace with the 16-character App Password
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER            # Sets the default "From" address for emails
+
+# Redis configuration for caching
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # Use database 1 for caching
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}

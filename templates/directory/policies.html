@@ -1,58 +1,87 @@
+<!-- templates/directory/policies.html -->
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'css/custom.css' %}">
+{% endblock %}
 
 {% block title %}Hotel Policies{% endblock %}
 
 {% block content %}
 <div class="row">
     <div class="col-lg-10 mx-auto">
-        <h1 class="display-4 mb-5 text-primary">Hotel Policies</h1>
+        <h2 class="display-4 mb-3 text-primary">Hotel Policies</h2>
+        <p class="mute">Click on each section below to view detailed information about our hotel policies. This will help you understand our standards and guest expectations.</p>
+
         
-        <div class="card shadow mb-4">
-            <div class="card-body">
-                <h2 class="mb-4">
-                    <i class="fas fa-shield-alt me-2"></i>General Policies
+        <div class="accordion" id="policiesAccordion">
+            <!-- General Policies -->
+            <div class="accordion-item policy-card">
+                <h2 class="accordion-header" id="headingGeneral">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseGeneral" aria-expanded="true" aria-controls="collapseGeneral">
+                        <i class="fas fa-shield-alt fa-2x text-primary me-3"></i>
+                        <span class="fw-bold">General Policies</span>
+                    </button>
                 </h2>
-                <div class="hotel-policy-list">
-                    {% for policy in general_policies %}
-                    <div class="mb-4">
-                        <h5 class="text-primary">{{ policy.title }}</h5>
-                        <p>{{ policy.content|linebreaks }}</p>
+                <div id="collapseGeneral" class="accordion-collapse collapse" aria-labelledby="headingGeneral" data-bs-parent="#policiesAccordion">
+                    <div class="accordion-body">
+                        {% for policy in general_policies %}
+                            <div class="mb-4">
+                                <h5 class="text-primary">{{ policy.title }}</h5>
+                                <p>{{ policy.content|linebreaks }}</p>
+                            </div>
+                        {% empty %}
+                            <p>No general policies available.</p>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
-        </div>
 
-        <div class="card shadow mb-4">
-            <div class="card-body">
-                <h2 class="mb-4">
-                    <i class="fas fa-exclamation-triangle me-2"></i>Safety & Security
+            <!-- Service Policies -->
+            <div class="accordion-item policy-card">
+                <h2 class="accordion-header" id="headingService">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseService" aria-expanded="false" aria-controls="collapseService">
+                        <i class="fas fa-concierge-bell fa-2x text-primary me-3"></i>
+                        <span class="fw-bold">Service Policies</span>
+                    </button>
                 </h2>
-                <div class="row">
-                    {% for policy in safety_policies %}
-                    <div class="col-md-6 mb-4">
-                        <h5 class="text-primary">{{ policy.title }}</h5>
-                        <p>{{ policy.content|linebreaks }}</p>
+                <div id="collapseService" class="accordion-collapse collapse" aria-labelledby="headingService" data-bs-parent="#policiesAccordion">
+                    <div class="accordion-body">
+                        {% for policy in service_policies %}
+                            <div class="mb-4">
+                                <h5 class="text-primary">{{ policy.title }}</h5>
+                                <p>{{ policy.content|linebreaks }}</p>
+                            </div>
+                        {% empty %}
+                            <p>No service policies available.</p>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
-        </div>
 
-        <div class="card shadow">
-            <div class="card-body">
-                <h2 class="mb-4">
-                    <i class="fas fa-concierge-bell me-2"></i>Service Policies
+            <!-- Safety Policies -->
+            <div class="accordion-item policy-card">
+                <h2 class="accordion-header" id="headingSafety">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSafety" aria-expanded="false" aria-controls="collapseSafety">
+                        <i class="fas fa-exclamation-triangle fa-2x text-primary me-3"></i>
+                        <span class="fw-bold">Safety & Security</span>
+                    </button>
                 </h2>
-                <div class="row">
-                    {% for policy in service_policies %}
-                    <div class="col-md-6 mb-4">
-                        <h5 class="text-primary">{{ policy.title }}</h5>
-                        <p>{{ policy.content|linebreaks }}</p>
+                <div id="collapseSafety" class="accordion-collapse collapse" aria-labelledby="headingSafety" data-bs-parent="#policiesAccordion">
+                    <div class="accordion-body">
+                        {% for policy in safety_policies %}
+                            <div class="mb-4">
+                                <h5 class="text-primary">{{ policy.title }}</h5>
+                                <p>{{ policy.content|linebreaks }}</p>
+                            </div>
+                        {% empty %}
+                            <p>No safety policies available.</p>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
             </div>
+
         </div>
     </div>
 </div>

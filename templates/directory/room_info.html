@@ -10,7 +10,7 @@
         {% for room in room_types %}
         <div class="col">
             <div class="card h-100 shadow">
-                <img src="{{ room.image.url }}" class="card-img-top" alt="{{ room.name }}">
+                <img src="{{ room.image.url }}" class="card-img-top" alt="{{ room.name }}" loading="lazy">
                 <div class="card-body">
                     <h2 class="card-title">{{ room.name }}</h2>
                     <p class="lead">{{ room.description }}</p>

@@ -19,7 +19,7 @@
     <!-- Sage Green Header -->
     <nav class="navbar navbar-expand-lg navbar-dark shadow" style="background-color: #a7c957;">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'welcome' %}">
+            <a class="navbar-brand" href="{% if room_number %}{% url 'welcome_room' room_number=room_number %}{% else %}{% url 'welcome' %}{% endif %}">
                 <img src="{% static 'images/logo.png' %}" alt="Hotel Logo" height="40">
                 Yegezu Lejoch Hotel
             </a>
@@ -28,7 +28,7 @@
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="{% url 'welcome' %}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% if room_number %}{% url 'welcome_room' room_number=room_number %}{% else %}{% url 'welcome' %}{% endif %}">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'services' %}">Services</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'policies' %}">Policies</a></li>
                     <li class="nav-item"><a class="nav-link" href="{% url 'room_info' %}">Room Info</a></li>

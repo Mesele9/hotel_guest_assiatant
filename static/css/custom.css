@@ -159,24 +159,6 @@ footer a:hover {
     color: #f28c28; /* Orange */
 }
 
-/* static/css/styles.css (or your stylesheet) */
-.guest-message {
-    text-align: left;
-    color: blue;
-    margin: 5px 0;
-}
-
-.staff-message {
-    text-align: right;
-    color: green;
-    margin: 5px 0;
-}
-
-small {
-    color: #666;
-    font-size: 0.8em;
-}
-
 
 .chat-log {
     display: flex;
@@ -189,11 +171,92 @@ small {
     max-width: 80%;
 }
 .message.guest {
-     background: #e9ecef;
+     background: #d6d9db;
      align-self: flex-start;
 }
 .message.staff {
-    background: #007bff;
+    background: #d6b034;
     color: white;
     align-self: flex-end;
+}
+
+/* static/css/custom.css */
+
+/* Policy Card Effects */
+.policy-card {
+    margin-bottom: 1.5rem;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.policy-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.policy-card .accordion-button {
+    background-color: #f8f9fa;
+    border-radius: 10px 10px 0 0;
+    padding: 1.25rem;
+    font-size: 1.1rem;
+}
+
+.policy-card .accordion-button:not(.collapsed) {
+    background-color: #e9ecef;
+    color: #f28c28; /* Bootstrap primary color */
+}
+
+.policy-card .accordion-body {
+    background-color: #fff;
+    border-radius: 0 0 10px 10px;
+    padding: 1.5rem;
+}
+
+/* Service Card Effects */
+.service-card {
+    margin-bottom: 1.5rem;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.service-card .accordion-button {
+    background-color: #f8f9fa;
+    border-radius: 10px 10px 0 0;
+    padding: 1.25rem;
+    font-size: 1.1rem;
+}
+
+.service-card .accordion-button:not(.collapsed) {
+    background-color: #e9ecef;
+    color: #f28c28;
+}
+
+.service-card .accordion-body {
+    background-color: #fff;
+    border-radius: 0 0 10px 10px;
+    padding: 1.5rem;
+}
+
+/* 24/7 Service Quick View Card Effects */
+.service-quick-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.service-quick-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Smooth collapse transition */
+.accordion-collapse {
+    transition: height 0.3s ease;
 }
